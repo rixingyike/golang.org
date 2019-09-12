@@ -24,11 +24,7 @@ func (p *ParamProb) Len(proto int) int {
 		return 0
 	}
 	l, _ := multipartMessageBodyDataLen(proto, true, p.Data, p.Extensions)
-<<<<<<< HEAD
-	return 4 + l
-=======
 	return l
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // Marshal implements the Marshal method of MessageBody interface.
@@ -52,15 +48,6 @@ func (p *ParamProb) Marshal(proto int) ([]byte, error) {
 	default:
 		return nil, errInvalidProtocol
 	}
-<<<<<<< HEAD
-	b, err := marshalMultipartMessageBody(proto, true, p.Data, p.Extensions)
-	if err != nil {
-		return nil, err
-	}
-	b[0] = byte(p.Pointer)
-	return b, nil
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // parseParamProb parses b as an ICMP parameter problem message body.

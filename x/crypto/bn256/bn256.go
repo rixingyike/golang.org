@@ -15,11 +15,6 @@
 // http://cryptojedi.org/papers/dclxvi-20100714.pdf. Its output is compatible
 // with the implementation described in that paper.
 //
-<<<<<<< HEAD
-// (This package previously claimed to operate at a 128-bit security level.
-// However, recent improvements in attacks mean that is no longer true. See
-// https://moderncrypto.org/mail-archive/curves/2016/000740.html.)
-=======
 // This package previously claimed to operate at a 128-bit security level.
 // However, recent improvements in attacks mean that is no longer true. See
 // https://moderncrypto.org/mail-archive/curves/2016/000740.html.
@@ -28,7 +23,6 @@
 // elliptic curve. This package is frozen, and not implemented in constant time.
 // There is a more complete implementation at github.com/cloudflare/bn256, but
 // note that it suffers from the same security issues of the underlying curve.
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 package bn256 // import "golang.org/x/crypto/bn256"
 
 import (
@@ -62,12 +56,9 @@ func RandomG1(r io.Reader) (*big.Int, *G1, error) {
 }
 
 func (e *G1) String() string {
-<<<<<<< HEAD
-=======
 	if e.p == nil {
 		return "bn256.G1" + newCurvePoint(nil).String()
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	return "bn256.G1" + e.p.String()
 }
 
@@ -190,12 +181,9 @@ func RandomG2(r io.Reader) (*big.Int, *G2, error) {
 }
 
 func (e *G2) String() string {
-<<<<<<< HEAD
-=======
 	if e.p == nil {
 		return "bn256.G2" + newTwistPoint(nil).String()
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	return "bn256.G2" + e.p.String()
 }
 

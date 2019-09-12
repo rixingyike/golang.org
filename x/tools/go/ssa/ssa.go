@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package ssa
 
 // This package defines a high-level intermediate representation for
@@ -10,7 +12,7 @@ package ssa
 import (
 	"fmt"
 	"go/ast"
-	"go/constant"
+	exact "go/constant"
 	"go/token"
 	"go/types"
 	"sync"
@@ -75,6 +77,9 @@ type Member interface {
 }
 
 // A Type is a Member of a Package representing a package-level named type.
+//
+// Type() returns a *types.Named.
+//
 type Type struct {
 	object *types.TypeName
 	pkg    *Package
@@ -92,6 +97,7 @@ type Type struct {
 type NamedConst struct {
 	object *types.Const
 	Value  *Const
+	pos    token.Pos
 	pkg    *Package
 }
 
@@ -404,8 +410,9 @@ type Parameter struct {
 // All source-level constant expressions are represented by a Const
 // of the same type and value.
 //
-// Value holds the value of the constant, independent of its Type(),
-// using go/constant representation, or nil for a typed nil value.
+// Value holds the exact value of the constant, independent of its
+// Type(), using the same representation as package go/exact uses for
+// constants, or nil for a typed nil value.
 //
 // Pos() returns token.NoPos.
 //
@@ -416,7 +423,7 @@ type Parameter struct {
 //
 type Const struct {
 	typ   types.Type
-	Value constant.Value
+	Value exact.Value
 }
 
 // A Global is a named Value holding the address of a package-level
@@ -546,8 +553,8 @@ type BinOp struct {
 	register
 	// One of:
 	// ADD SUB MUL QUO REM          + - * / %
-	// AND OR XOR SHL SHR AND_NOT   & | ^ << >> &^
-	// EQL NEQ LSS LEQ GTR GEQ      == != < <= < >=
+	// AND OR XOR SHL SHR AND_NOT   & | ^ << >> &~
+	// EQL LSS GTR NEQ LEQ GEQ      == != < <= < >=
 	Op   token.Token
 	X, Y Value
 }
@@ -654,10 +661,10 @@ type ChangeInterface struct {
 // value of a concrete type.
 //
 // Use Program.MethodSets.MethodSet(X.Type()) to find the method-set
-// of X, and Program.MethodValue(m) to find the implementation of a method.
+// of X, and Program.Method(m) to find the implementation of a method.
 //
 // To construct the zero value of an interface type T, use:
-// 	NewConst(constant.MakeNil(), T, pos)
+// 	NewConst(exact.MakeNil(), T, pos)
 //
 // Pos() returns the ast.CallExpr.Lparen, if the instruction arose
 // from an explicit conversion in the source.
@@ -787,7 +794,7 @@ type Slice struct {
 type FieldAddr struct {
 	register
 	X     Value // *struct
-	Field int   // field is X.Type().Underlying().(*types.Pointer).Elem().Underlying().(*types.Struct).Field(Field)
+	Field int   // index into X.Type().Deref().(*types.Struct).Fields
 }
 
 // The Field instruction yields the Field of struct X.

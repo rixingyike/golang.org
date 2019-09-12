@@ -2,32 +2,20 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-<<<<<<< HEAD
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris windows
-=======
 // +build aix darwin dragonfly freebsd linux netbsd openbsd solaris windows
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 package socket_test
 
 import (
-<<<<<<< HEAD
-=======
 	"bytes"
 	"fmt"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	"net"
 	"runtime"
 	"syscall"
 	"testing"
 
-<<<<<<< HEAD
-	"golang.org/x/net/internal/nettest"
-	"golang.org/x/net/internal/socket"
-=======
 	"golang.org/x/net/internal/socket"
 	"golang.org/x/net/nettest"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 )
 
 func TestSocket(t *testing.T) {
@@ -58,8 +46,6 @@ func testSocketOption(t *testing.T, so *socket.Option) {
 		t.Fatalf("got %d; want greater than or equal to %d", n, N)
 	}
 }
-<<<<<<< HEAD
-=======
 
 type mockControl struct {
 	Level int
@@ -310,4 +296,3 @@ func BenchmarkUDP(b *testing.B) {
 		}
 	}
 }
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a

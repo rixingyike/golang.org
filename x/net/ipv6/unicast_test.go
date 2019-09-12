@@ -20,11 +20,7 @@ import (
 
 func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsIPv6() {
@@ -53,11 +49,7 @@ func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 
 	for i, toggle := range []bool{true, false, true} {
 		if err := p.SetControlMessage(cf, toggle); err != nil {
-<<<<<<< HEAD
-			if nettest.ProtocolNotSupported(err) {
-=======
 			if protocolNotSupported(err) {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 				t.Logf("not supported on %s", runtime.GOOS)
 				continue
 			}
@@ -86,11 +78,7 @@ func TestPacketConnReadWriteUnicastUDP(t *testing.T) {
 
 func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsIPv6() {
@@ -136,9 +124,11 @@ func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 		if toggle {
 			psh = nil
 			if err := p.SetChecksum(true, 2); err != nil {
-				// AIX and Solaris never allow to modify
-				// ICMP properties.
-				if runtime.GOOS != "aix" && runtime.GOOS != "solaris" {
+				// AIX, Illumos and Solaris never allow
+				// modification of ICMP properties.
+				switch runtime.GOOS {
+				case "aix", "illumos", "solaris":
+				default:
 					t.Fatal(err)
 				}
 			}
@@ -159,11 +149,7 @@ func TestPacketConnReadWriteUnicastICMP(t *testing.T) {
 			t.Fatal(err)
 		}
 		if err := p.SetControlMessage(cf, toggle); err != nil {
-<<<<<<< HEAD
-			if nettest.ProtocolNotSupported(err) {
-=======
 			if protocolNotSupported(err) {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 				t.Logf("not supported on %s", runtime.GOOS)
 				continue
 			}

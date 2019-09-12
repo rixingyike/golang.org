@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 // No testdata on Android.
 
 // +build !android
@@ -42,7 +44,6 @@ var inputs = []string{
 	"testdata/chanreflect.go",
 	"testdata/context.go",
 	"testdata/conv.go",
-	"testdata/extended.go",
 	"testdata/finalizer.go",
 	"testdata/flow.go",
 	"testdata/fmtexcerpt.go",
@@ -59,7 +60,7 @@ var inputs = []string{
 	"testdata/rtti.go",
 	"testdata/structreflect.go",
 	"testdata/structs.go",
-	// "testdata/timer.go", // TODO(adonovan): fix broken assumptions about runtime timers
+	"testdata/timer.go",
 }
 
 // Expectation grammar:
@@ -121,13 +122,11 @@ var inputs = []string{
 //   (NB, anon functions still include line numbers.)
 //
 type expectation struct {
-	kind     string // "pointsto" | "pointstoquery" | "types" | "calls" | "warning"
+	kind     string // "pointsto" | "types" | "calls" | "warning"
 	filename string
 	linenum  int // source line number, 1-based
 	args     []string
-	query    string           // extended query
-	extended *pointer.Pointer // extended query pointer
-	types    []types.Type     // for types
+	types    []types.Type // for types
 }
 
 func (e *expectation) String() string {
@@ -141,7 +140,7 @@ func (e *expectation) errorf(format string, args ...interface{}) {
 }
 
 func (e *expectation) needsProbe() bool {
-	return e.kind == "pointsto" || e.kind == "pointstoquery" || e.kind == "types"
+	return e.kind == "pointsto" || e.kind == "types"
 }
 
 // Find probe (call to print(x)) of same source file/line as expectation.
@@ -242,10 +241,6 @@ func doOneInput(input, filename string) bool {
 			case "pointsto":
 				e.args = split(rest, "|")
 
-			case "pointstoquery":
-				args := strings.SplitN(rest, " ", 2)
-				e.query = args[0]
-				e.args = split(args[1], "|")
 			case "types":
 				for _, typstr := range split(rest, "|") {
 					var t types.Type = types.Typ[types.Invalid] // means "..."
@@ -302,20 +297,8 @@ func doOneInput(input, filename string) bool {
 		Mains:          []*ssa.Package{ptrmain},
 		Log:            &log,
 	}
-probeLoop:
 	for probe := range probes {
 		v := probe.Args[0]
-		pos := prog.Fset.Position(probe.Pos())
-		for _, e := range exps {
-			if e.linenum == pos.Line && e.filename == pos.Filename && e.kind == "pointstoquery" {
-				var err error
-				e.extended, err = config.AddExtendedQuery(v, e.query)
-				if err != nil {
-					panic(err)
-				}
-				continue probeLoop
-			}
-		}
 		if pointer.CanPoint(v.Type()) {
 			config.AddQuery(v)
 		}
@@ -345,9 +328,6 @@ probeLoop:
 				e.errorf("unreachable print() statement has expectation %s", e)
 				continue
 			}
-			if e.extended != nil {
-				pts = e.extended.PointsTo()
-			}
 			tProbe = call.Args[0].Type()
 			if !pointer.CanPoint(tProbe) {
 				ok = false
@@ -357,7 +337,7 @@ probeLoop:
 		}
 
 		switch e.kind {
-		case "pointsto", "pointstoquery":
+		case "pointsto":
 			if !checkPointsToExpectation(e, pts, lineMapping, prog) {
 				ok = false
 			}
@@ -498,7 +478,7 @@ func checkCallsExpectation(prog *ssa.Program, e *expectation, cg *callgraph.Grap
 		if edge.Caller.Func.String() == e.args[0] {
 			calleeStr := edge.Callee.Func.String()
 			if calleeStr == e.args[1] {
-				return errOK // expectation satisfied; stop the search
+				return errOK // expectation satisified; stop the search
 			}
 			found[calleeStr]++
 		}
@@ -524,7 +504,7 @@ func checkWarningExpectation(prog *ssa.Program, e *expectation, warnings []point
 	}
 
 	if len(warnings) == 0 {
-		e.errorf("@warning %q expectation, but no warnings", e.args[0])
+		e.errorf("@warning %s expectation, but no warnings", strconv.Quote(e.args[0]))
 		return false
 	}
 
@@ -534,7 +514,7 @@ func checkWarningExpectation(prog *ssa.Program, e *expectation, warnings []point
 		}
 	}
 
-	e.errorf("@warning %q expectation not satisfied; found these warnings though:", e.args[0])
+	e.errorf("@warning %s expectation not satised; found these warnings though:", strconv.Quote(e.args[0]))
 	for _, w := range warnings {
 		fmt.Printf("%s: warning: %s\n", prog.Fset.Position(w.Pos), w.Message)
 	}
@@ -542,9 +522,6 @@ func checkWarningExpectation(prog *ssa.Program, e *expectation, warnings []point
 }
 
 func TestInput(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping in short mode; this test requires tons of memory; https://golang.org/issue/14113")
-	}
 	ok := true
 
 	wd, err := os.Getwd()

@@ -134,13 +134,10 @@ func (qr *quickRand) Read(p []byte) (int, error) {
 }
 
 func TestMultiSign(t *testing.T) {
-<<<<<<< HEAD
-=======
 	if testing.Short() {
 		t.Skip("skipping long test in -short mode")
 	}
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	zero := quickRand(0)
 	config := packet.Config{Rand: &zero}
 
@@ -194,8 +191,6 @@ func TestMultiSign(t *testing.T) {
 	}
 }
 
-<<<<<<< HEAD
-=======
 const signatureBlock = `
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPrivacy 0.99
@@ -249,7 +244,6 @@ func TestParseInvalid(t *testing.T) {
 	}
 }
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 var clearsignInput = []byte(`
 ;lasjlkfdsa
 

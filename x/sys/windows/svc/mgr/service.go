@@ -8,13 +8,14 @@ package mgr
 
 import (
 	"syscall"
-	"unsafe"
 
 	"golang.org/x/sys/windows"
 	"golang.org/x/sys/windows/svc"
 )
 
 // TODO(brainman): Use EnumDependentServices to enumerate dependent services.
+
+// TODO(brainman): Use EnumServicesStatus to enumerate services in the specified service control manager database.
 
 // Service is used to access Windows service.
 type Service struct {
@@ -38,7 +39,7 @@ func (s *Service) Start(args ...string) error {
 	var p **uint16
 	if len(args) > 0 {
 		vs := make([]*uint16, len(args))
-		for i := range vs {
+		for i, _ := range vs {
 			vs[i] = syscall.StringToUTF16Ptr(args[i])
 		}
 		p = &vs[0]
@@ -61,15 +62,13 @@ func (s *Service) Control(c svc.Cmd) (svc.Status, error) {
 
 // Query returns current status of service s.
 func (s *Service) Query() (svc.Status, error) {
-	var t windows.SERVICE_STATUS_PROCESS
-	var needed uint32
-	err := windows.QueryServiceStatusEx(s.Handle, windows.SC_STATUS_PROCESS_INFO, (*byte)(unsafe.Pointer(&t)), uint32(unsafe.Sizeof(t)), &needed)
+	var t windows.SERVICE_STATUS
+	err := windows.QueryServiceStatus(s.Handle, &t)
 	if err != nil {
 		return svc.Status{}, err
 	}
 	return svc.Status{
-		State:     svc.State(t.CurrentState),
-		Accepts:   svc.Accepted(t.ControlsAccepted),
-		ProcessId: t.ProcessId,
+		State:   svc.State(t.CurrentState),
+		Accepts: svc.Accepted(t.ControlsAccepted),
 	}, nil
 }

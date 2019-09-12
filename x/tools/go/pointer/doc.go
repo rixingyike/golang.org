@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 /*
 
 Package pointer implements Andersen's analysis, an inclusion-based
@@ -431,7 +433,7 @@ Structs
   Field offsets are logical field offsets (plus one for the identity
   node), so the sizes of the fields can be ignored by the analysis.
 
-  (The identity node is non-traditional but enables the distinction
+  (The identity node is non-traditional but enables the distiction
   described above, which is valuable for code comprehension tools.
   Typical pointer analyses for C, whose purpose is compiler
   optimization, must soundly model unsafe.Pointer (void*) conversions,

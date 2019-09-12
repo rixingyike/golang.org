@@ -5,10 +5,6 @@
 package socket
 
 import (
-<<<<<<< HEAD
-	"errors"
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	"runtime"
 	"syscall"
 	"unsafe"
@@ -66,17 +62,9 @@ func sendmsg(s uintptr, h *msghdr, flags int) (int, error) {
 }
 
 func recvmmsg(s uintptr, hs []mmsghdr, flags int) (int, error) {
-<<<<<<< HEAD
-	return 0, errors.New("not implemented")
-}
-
-func sendmmsg(s uintptr, hs []mmsghdr, flags int) (int, error) {
-	return 0, errors.New("not implemented")
-=======
 	return 0, errNotImplemented
 }
 
 func sendmmsg(s uintptr, hs []mmsghdr, flags int) (int, error) {
 	return 0, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package analysis
 
 // This file computes the markup for information from go/types:
@@ -32,7 +34,7 @@ import (
 // TODO(adonovan): audit to make sure it's safe on ill-typed packages.
 
 // TODO(adonovan): use same Sizes as loader.Config.
-var sizes = types.StdSizes{WordSize: 8, MaxAlign: 8}
+var sizes = types.StdSizes{8, 8}
 
 func (a *analysis) doTypeInfo(info *loader.PackageInfo, implements map[*types.Named]implementsFacts) {
 	// We must not assume the corresponding SSA packages were
@@ -101,16 +103,14 @@ func (a *analysis) doTypeInfo(info *loader.PackageInfo, implements map[*types.Na
 	// IMPLEMENTS & METHOD SETS
 	for _, obj := range info.Defs {
 		if obj, ok := obj.(*types.TypeName); ok {
-			if named, ok := obj.Type().(*types.Named); ok {
-				a.namedType(named, implements)
-			}
+			a.namedType(obj, implements)
 		}
 	}
 }
 
-func (a *analysis) namedType(T *types.Named, implements map[*types.Named]implementsFacts) {
-	obj := T.Obj()
+func (a *analysis) namedType(obj *types.TypeName, implements map[*types.Named]implementsFacts) {
 	qualifier := types.RelativeTo(obj.Pkg())
+	T := obj.Type().(*types.Named)
 	v := &TypeInfoJSON{
 		Name:    obj.Name(),
 		Size:    sizes.Sizeof(T),

@@ -72,19 +72,11 @@ func NewSignerPrivateKey(creationTime time.Time, signer crypto.Signer) *PrivateK
 	// type-switch on the values, for backwards-compatibility.
 	switch pubkey := signer.Public().(type) {
 	case *rsa.PublicKey:
-<<<<<<< HEAD
-		pk.PublicKey = *NewRSAPublicKey(currentTime, pubkey)
-	case rsa.PublicKey:
-		pk.PublicKey = *NewRSAPublicKey(currentTime, &pubkey)
-	case *ecdsa.PublicKey:
-		pk.PublicKey = *NewECDSAPublicKey(currentTime, pubkey)
-=======
 		pk.PublicKey = *NewRSAPublicKey(creationTime, pubkey)
 	case rsa.PublicKey:
 		pk.PublicKey = *NewRSAPublicKey(creationTime, &pubkey)
 	case *ecdsa.PublicKey:
 		pk.PublicKey = *NewECDSAPublicKey(creationTime, pubkey)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	case ecdsa.PublicKey:
 		pk.PublicKey = *NewECDSAPublicKey(creationTime, &pubkey)
 	default:

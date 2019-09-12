@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package pointer
 
 // This file implements the generation and resolution rules for
@@ -30,7 +32,7 @@ package pointer
 
 import (
 	"fmt"
-	"go/constant"
+	exact "go/constant"
 	"go/types"
 	"reflect"
 
@@ -1024,7 +1026,7 @@ func ext۰reflect۰ChanOf(a *analysis, cgn *cgnode) {
 	var dir reflect.ChanDir // unknown
 	if site := cgn.callersite; site != nil {
 		if c, ok := site.instr.Common().Args[0].(*ssa.Const); ok {
-			v, _ := constant.Int64Val(c.Value)
+			v, _ := exact.Int64Val(c.Value)
 			if 0 <= v && v <= int64(reflect.BothDir) {
 				dir = reflect.ChanDir(v)
 			}
@@ -1668,7 +1670,7 @@ func ext۰reflect۰rtype۰FieldByName(a *analysis, cgn *cgnode) {
 	var name string
 	if site := cgn.callersite; site != nil {
 		if c, ok := site.instr.Common().Args[0].(*ssa.Const); ok {
-			name = constant.StringVal(c.Value)
+			name = exact.StringVal(c.Value)
 		}
 	}
 
@@ -1751,7 +1753,7 @@ func ext۰reflect۰rtype۰InOut(a *analysis, cgn *cgnode, out bool) {
 	index := -1
 	if site := cgn.callersite; site != nil {
 		if c, ok := site.instr.Common().Args[0].(*ssa.Const); ok {
-			v, _ := constant.Int64Val(c.Value)
+			v, _ := exact.Int64Val(c.Value)
 			index = int(v)
 		}
 	}
@@ -1910,7 +1912,7 @@ func ext۰reflect۰rtype۰MethodByName(a *analysis, cgn *cgnode) {
 	var name string
 	if site := cgn.callersite; site != nil {
 		if c, ok := site.instr.Common().Args[0].(*ssa.Const); ok {
-			name = constant.StringVal(c.Value)
+			name = exact.StringVal(c.Value)
 		}
 	}
 

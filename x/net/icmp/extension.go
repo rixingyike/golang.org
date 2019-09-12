@@ -103,13 +103,10 @@ func parseExtensions(typ Type, b []byte, l int) ([]Extension, int, error) {
 				return nil, -1, err
 			}
 			exts = append(exts, ext)
-<<<<<<< HEAD
-=======
 		default:
 			ext := &RawExtension{Data: make([]byte, ol)}
 			copy(ext.Data, b[:ol])
 			exts = append(exts, ext)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		}
 		b = b[ol:]
 	}

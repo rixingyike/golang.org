@@ -311,15 +311,6 @@ func newPushHandler() http.Handler {
 		}
 		time.Sleep(100 * time.Millisecond) // fake network latency + parsing time
 		if err := pushTmpl.Execute(w, struct {
-<<<<<<< HEAD
-			CacheBust int64
-			HTTPSHost string
-			HTTPHost  string
-		}{
-			CacheBust: cacheBust,
-			HTTPSHost: httpsHost(),
-			HTTPHost:  httpHost(),
-=======
 			CacheBust   int64
 			HTTPSHost   string
 			HTTP1Prefix string
@@ -327,7 +318,6 @@ func newPushHandler() http.Handler {
 			CacheBust:   cacheBust,
 			HTTPSHost:   httpsHost(),
 			HTTP1Prefix: http1Prefix(),
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		}); err != nil {
 			log.Printf("Executing server push template: %v", err)
 		}
@@ -456,8 +446,6 @@ func serveProdTLS(autocertManager *autocert.Manager) error {
 	srv := &http.Server{
 		TLSConfig: &tls.Config{
 			GetCertificate: autocertManager.GetCertificate,
-<<<<<<< HEAD
-=======
 			GetConfigForClient: func(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 				if hello.ServerName == "http1.golang.org" {
 					return &tls.Config{
@@ -466,7 +454,6 @@ func serveProdTLS(autocertManager *autocert.Manager) error {
 				}
 				return nil, nil // fallback to other methods
 			},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		},
 	}
 	http2.ConfigureServer(srv, &http2.Server{
@@ -496,11 +483,7 @@ func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
 }
 
 func serveProd() error {
-<<<<<<< HEAD
-	log.Printf("running in production mode")
-=======
 	log.Printf("running in production mode.")
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 	storageClient, err := storage.NewClient(context.Background())
 	if err != nil {
@@ -508,11 +491,7 @@ func serveProd() error {
 	}
 	autocertManager := &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
-<<<<<<< HEAD
-		HostPolicy: autocert.HostWhitelist("http2.golang.org"),
-=======
 		HostPolicy: autocert.HostWhitelist("http1.golang.org", "http2.golang.org"),
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		Cache:      autocertcache.NewGoogleCloudStorageCache(storageClient, "golang-h2demo-autocert"),
 	}
 

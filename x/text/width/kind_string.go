@@ -4,8 +4,6 @@ package width
 
 import "strconv"
 
-<<<<<<< HEAD
-=======
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
@@ -18,7 +16,6 @@ func _() {
 	_ = x[EastAsianHalfwidth-5]
 }
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 const _Kind_name = "NeutralEastAsianAmbiguousEastAsianWideEastAsianNarrowEastAsianFullwidthEastAsianHalfwidth"
 
 var _Kind_index = [...]uint8{0, 7, 25, 38, 53, 71, 89}

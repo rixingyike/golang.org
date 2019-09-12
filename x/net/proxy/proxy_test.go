@@ -6,23 +6,16 @@ package proxy
 
 import (
 	"bytes"
-<<<<<<< HEAD
-	"fmt"
-=======
 	"context"
 	"errors"
 	"fmt"
 	"net"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 
-<<<<<<< HEAD
-=======
 	"golang.org/x/net/internal/socks"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	"golang.org/x/net/internal/sockstest"
 )
 
@@ -48,42 +41,6 @@ func (t proxyFromEnvTest) String() string {
 	}
 	return strings.TrimSpace(buf.String())
 }
-<<<<<<< HEAD
-
-func TestFromEnvironment(t *testing.T) {
-	ResetProxyEnv()
-
-	type dummyDialer struct {
-		direct
-	}
-
-	RegisterDialerType("irc", func(_ *url.URL, _ Dialer) (Dialer, error) {
-		return dummyDialer{}, nil
-	})
-
-	proxyFromEnvTests := []proxyFromEnvTest{
-		{allProxyEnv: "127.0.0.1:8080", noProxyEnv: "localhost, 127.0.0.1", wantTypeOf: direct{}},
-		{allProxyEnv: "ftp://example.com:8000", noProxyEnv: "localhost, 127.0.0.1", wantTypeOf: direct{}},
-		{allProxyEnv: "socks5://example.com:8080", noProxyEnv: "localhost, 127.0.0.1", wantTypeOf: &PerHost{}},
-		{allProxyEnv: "irc://example.com:8000", wantTypeOf: dummyDialer{}},
-		{noProxyEnv: "localhost, 127.0.0.1", wantTypeOf: direct{}},
-		{wantTypeOf: direct{}},
-	}
-
-	for _, tt := range proxyFromEnvTests {
-		os.Setenv("ALL_PROXY", tt.allProxyEnv)
-		os.Setenv("NO_PROXY", tt.noProxyEnv)
-		ResetCachedEnvironment()
-
-		d := FromEnvironment()
-		if got, want := fmt.Sprintf("%T", d), fmt.Sprintf("%T", tt.wantTypeOf); got != want {
-			t.Errorf("%v: got type = %T, want %T", tt, d, tt.wantTypeOf)
-		}
-	}
-}
-
-func TestFromURL(t *testing.T) {
-=======
 
 func TestFromEnvironment(t *testing.T) {
 	ResetProxyEnv()
@@ -140,44 +97,11 @@ func TestFromURL(t *testing.T) {
 }
 
 func TestSOCKS5(t *testing.T) {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	ss, err := sockstest.NewServer(sockstest.NoAuthRequired, sockstest.NoProxyRequired)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer ss.Close()
-<<<<<<< HEAD
-	url, err := url.Parse("socks5://user:password@" + ss.Addr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	proxy, err := FromURL(url, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	c, err := proxy.Dial("tcp", "fqdn.doesnotexist:5963")
-	if err != nil {
-		t.Fatal(err)
-	}
-	c.Close()
-}
-
-func TestSOCKS5(t *testing.T) {
-	ss, err := sockstest.NewServer(sockstest.NoAuthRequired, sockstest.NoProxyRequired)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer ss.Close()
-	proxy, err := SOCKS5("tcp", ss.Addr().String(), nil, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	c, err := proxy.Dial("tcp", ss.TargetAddr().String())
-	if err != nil {
-		t.Fatal(err)
-	}
-	c.Close()
-=======
 	proxy, err := SOCKS5("tcp", ss.Addr().String(), nil, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -218,7 +142,6 @@ func TestFromEnvironmentUsing(t *testing.T) {
 	if !strings.Contains(err.Error(), errFoo.Error()) {
 		t.Errorf("got unexpected error %q; want substr %q", err, errFoo)
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 func ResetProxyEnv() {

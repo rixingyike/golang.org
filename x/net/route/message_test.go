@@ -162,16 +162,6 @@ func TestRouteMessage(t *testing.T) {
 				{
 					Type: sysRTM_GET,
 					Addrs: []Addr{
-<<<<<<< HEAD
-						&Inet4Addr{IP: [4]byte{127, 0, 0, 1}},
-						nil,
-						nil,
-						nil,
-						&LinkAddr{},
-						&Inet4Addr{},
-						nil,
-						&Inet4Addr{},
-=======
 						sysRTAX_DST:     &Inet4Addr{IP: [4]byte{127, 0, 0, 1}},
 						sysRTAX_GATEWAY: nil,
 						sysRTAX_NETMASK: nil,
@@ -180,17 +170,12 @@ func TestRouteMessage(t *testing.T) {
 						sysRTAX_IFA:     &Inet4Addr{},
 						sysRTAX_AUTHOR:  nil,
 						sysRTAX_BRD:     &Inet4Addr{},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					},
 				},
 				{
 					Type: sysRTM_GET,
 					Addrs: []Addr{
-<<<<<<< HEAD
-						&Inet4Addr{IP: [4]byte{127, 0, 0, 1}},
-=======
 						sysRTAX_DST: &Inet4Addr{IP: [4]byte{127, 0, 0, 1}},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					},
 				},
 			}...)
@@ -199,16 +184,6 @@ func TestRouteMessage(t *testing.T) {
 				{
 					Type: sysRTM_GET,
 					Addrs: []Addr{
-<<<<<<< HEAD
-						&Inet6Addr{IP: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
-						nil,
-						nil,
-						nil,
-						&LinkAddr{},
-						&Inet6Addr{},
-						nil,
-						&Inet6Addr{},
-=======
 						sysRTAX_DST:     &Inet6Addr{IP: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
 						sysRTAX_GATEWAY: nil,
 						sysRTAX_NETMASK: nil,
@@ -217,17 +192,12 @@ func TestRouteMessage(t *testing.T) {
 						sysRTAX_IFA:     &Inet6Addr{},
 						sysRTAX_AUTHOR:  nil,
 						sysRTAX_BRD:     &Inet6Addr{},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					},
 				},
 				{
 					Type: sysRTM_GET,
 					Addrs: []Addr{
-<<<<<<< HEAD
-						&Inet6Addr{IP: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
-=======
 						sysRTAX_DST: &Inet6Addr{IP: [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					},
 				},
 			}...)
@@ -253,14 +223,8 @@ func TestRouteMessage(t *testing.T) {
 			t.Fatalf("%v: %v", m, err)
 		}
 		for _, rm := range rms {
-<<<<<<< HEAD
-			err := rm.(*RouteMessage).Err
-			if err != nil {
-				t.Errorf("%v: %v", m, err)
-=======
 			if rm, ok := rm.(*RouteMessage); ok && rm.Err != nil {
 				t.Errorf("%v: %v", m, rm.Err)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 			}
 		}
 		ss, err := msgs(rms).validate()

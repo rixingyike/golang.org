@@ -1160,6 +1160,32 @@ func TestServer_Ping(t *testing.T) {
 	}
 }
 
+func TestServer_MaxQueuedControlFrames(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
+
+	st := newServerTester(t, nil)
+	defer st.Close()
+	st.greet()
+
+	const extraPings = 500000 // enough to fill the TCP buffers
+
+	for i := 0; i < maxQueuedControlFrames+extraPings; i++ {
+		pingData := [8]byte{1, 2, 3, 4, 5, 6, 7, 8}
+		if err := st.fr.WritePing(false, pingData); err != nil {
+			if i == 0 {
+				t.Fatal(err)
+			}
+			// We expect the connection to get closed by the server when the TCP
+			// buffer fills up and the write queue reaches MaxQueuedControlFrames.
+			t.Logf("sent %d PING frames", i)
+			return
+		}
+	}
+	t.Errorf("unexpected success sending all PING frames")
+}
+
 func TestServer_RejectsLargeFrames(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("see golang.org/issue/13434")
@@ -2361,6 +2387,9 @@ func TestServer_NoCrash_HandlerClose_Then_ClientClose(t *testing.T) {
 		// it did before.
 		st.writeData(1, true, []byte("foo"))
 
+		// Get our flow control bytes back, since the handler didn't get them.
+		st.wantWindowUpdate(0, uint32(len("foo")))
+
 		// Sent after a peer sends data anyway (admittedly the
 		// previous RST_STREAM might've still been in-flight),
 		// but they'll get the more friendly 'cancel' code
@@ -3191,6 +3220,26 @@ func (c *issue53Conn) SetDeadline(t time.Time) error      { return nil }
 func (c *issue53Conn) SetReadDeadline(t time.Time) error  { return nil }
 func (c *issue53Conn) SetWriteDeadline(t time.Time) error { return nil }
 
+// golang.org/issue/33839
+func TestServeConnOptsNilReceiverBehavior(t *testing.T) {
+	defer func() {
+		if r := recover(); r != nil {
+			t.Errorf("got a panic that should not happen: %v", r)
+		}
+	}()
+
+	var o *ServeConnOpts
+	if o.context() == nil {
+		t.Error("o.context should not return nil")
+	}
+	if o.baseConfig() == nil {
+		t.Error("o.baseConfig should not return nil")
+	}
+	if o.handler() == nil {
+		t.Error("o.handler should not return nil")
+	}
+}
+
 // golang.org/issue/12895
 func TestConfigureServer(t *testing.T) {
 	tests := []struct {
@@ -3718,7 +3767,6 @@ func TestIssue20704Race(t *testing.T) {
 		itemSize  = 1 << 10
 		itemCount = 100
 	)
-<<<<<<< HEAD
 
 	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
 		for i := 0; i < itemCount; i++ {
@@ -3765,54 +3813,6 @@ func TestServer_Rejects_TooSmall(t *testing.T) {
 	})
 }
 
-=======
-
-	st := newServerTester(t, func(w http.ResponseWriter, r *http.Request) {
-		for i := 0; i < itemCount; i++ {
-			_, err := w.Write(make([]byte, itemSize))
-			if err != nil {
-				return
-			}
-		}
-	}, optOnlyServer)
-	defer st.Close()
-
-	tr := &Transport{TLSClientConfig: tlsConfigInsecure}
-	defer tr.CloseIdleConnections()
-	cl := &http.Client{Transport: tr}
-
-	for i := 0; i < 1000; i++ {
-		resp, err := cl.Get(st.ts.URL)
-		if err != nil {
-			t.Fatal(err)
-		}
-		// Force a RST stream to the server by closing without
-		// reading the body:
-		resp.Body.Close()
-	}
-}
-
-func TestServer_Rejects_TooSmall(t *testing.T) {
-	testServerResponse(t, func(w http.ResponseWriter, r *http.Request) error {
-		ioutil.ReadAll(r.Body)
-		return nil
-	}, func(st *serverTester) {
-		st.writeHeaders(HeadersFrameParam{
-			StreamID: 1, // clients send odd numbers
-			BlockFragment: st.encodeHeader(
-				":method", "POST",
-				"content-length", "4",
-			),
-			EndStream:  false, // to say DATA frames are coming
-			EndHeaders: true,
-		})
-		st.writeData(1, true, []byte("12345"))
-
-		st.wantRSTStream(1, ErrCodeProtocol)
-	})
-}
-
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 // Tests that a handler setting "Connection: close" results in a GOAWAY being sent,
 // and the connection still completing.
 func TestServerHandlerConnectionClose(t *testing.T) {

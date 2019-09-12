@@ -157,13 +157,6 @@ func benchmarkSum(b *testing.B, size int, unaligned bool) {
 	}
 }
 
-<<<<<<< HEAD
-func Benchmark64(b *testing.B)          { benchmark(b, 64, false) }
-func Benchmark1K(b *testing.B)          { benchmark(b, 1024, false) }
-func Benchmark64Unaligned(b *testing.B) { benchmark(b, 64, true) }
-func Benchmark1KUnaligned(b *testing.B) { benchmark(b, 1024, true) }
-func Benchmark2M(b *testing.B)          { benchmark(b, 2097152, true) }
-=======
 func benchmarkWrite(b *testing.B, size int, unaligned bool) {
 	var key [32]byte
 	h := New(&key)
@@ -191,7 +184,6 @@ func BenchmarkWrite2M(b *testing.B)          { benchmarkWrite(b, 2*1024*1024, fa
 func BenchmarkWrite64Unaligned(b *testing.B) { benchmarkWrite(b, 64, true) }
 func BenchmarkWrite1KUnaligned(b *testing.B) { benchmarkWrite(b, 1024, true) }
 func BenchmarkWrite2MUnaligned(b *testing.B) { benchmarkWrite(b, 2*1024*1024, true) }
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 func unalignBytes(in []byte) []byte {
 	out := make([]byte, len(in)+1)

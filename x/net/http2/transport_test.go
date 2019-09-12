@@ -19,6 +19,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httptrace"
 	"net/textproto"
 	"net/url"
 	"os"
@@ -98,6 +99,15 @@ func TestTransportH2c(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	var gotConnCnt int32
+	trace := &httptrace.ClientTrace{
+		GotConn: func(connInfo httptrace.GotConnInfo) {
+			if !connInfo.Reused {
+				atomic.AddInt32(&gotConnCnt, 1)
+			}
+		},
+	}
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 	tr := &Transport{
 		AllowHTTP: true,
 		DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
@@ -117,6 +127,9 @@ func TestTransportH2c(t *testing.T) {
 	}
 	if got, want := string(body), "Hello, /foobar, http: true"; got != want {
 		t.Fatalf("response got %v, want %v", got, want)
+	}
+	if got, want := gotConnCnt, int32(1); got != want {
+		t.Errorf("Too many got connections: %d", gotConnCnt)
 	}
 }
 
@@ -244,6 +257,14 @@ func TestTransportGroupsPendingDials(t *testing.T) {
 		mu    sync.Mutex
 		dials = map[string]int{}
 	)
+	var gotConnCnt int32
+	trace := &httptrace.ClientTrace{
+		GotConn: func(connInfo httptrace.GotConnInfo) {
+			if !connInfo.Reused {
+				atomic.AddInt32(&gotConnCnt, 1)
+			}
+		},
+	}
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
@@ -254,6 +275,7 @@ func TestTransportGroupsPendingDials(t *testing.T) {
 				t.Error(err)
 				return
 			}
+			req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 			res, err := tr.RoundTrip(req)
 			if err != nil {
 				t.Error(err)
@@ -297,6 +319,9 @@ func TestTransportGroupsPendingDials(t *testing.T) {
 		return nil
 	}); err != nil {
 		t.Errorf("State of pool after CloseIdleConnections: %v", err)
+	}
+	if got, want := gotConnCnt, int32(1); got != want {
+		t.Errorf("Too many got connections: %d", gotConnCnt)
 	}
 }
 
@@ -3380,8 +3405,6 @@ func TestTransportRetryAfterRefusedStream(t *testing.T) {
 		resp.Body.Close()
 		if resp.StatusCode != 204 {
 			return fmt.Errorf("Status = %v; want 204", resp.StatusCode)
-<<<<<<< HEAD
-=======
 		}
 		return nil
 	}
@@ -3726,356 +3749,8 @@ func TestAuthorityAddr(t *testing.T) {
 		got := authorityAddr(tt.scheme, tt.authority)
 		if got != tt.want {
 			t.Errorf("authorityAddr(%q, %q) = %q; want %q", tt.scheme, tt.authority, got, tt.want)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
-		}
-		return nil
-	}
-<<<<<<< HEAD
-	ct.server = func() error {
-		ct.greet()
-		var buf bytes.Buffer
-		enc := hpack.NewEncoder(&buf)
-		nreq := 0
-
-		for {
-			f, err := ct.fr.ReadFrame()
-			if err != nil {
-				select {
-				case <-clientDone:
-					// If the client's done, it
-					// will have reported any
-					// errors on its side.
-					return nil
-				default:
-					return err
-				}
-			}
-			switch f := f.(type) {
-			case *WindowUpdateFrame, *SettingsFrame:
-			case *HeadersFrame:
-				if !f.HeadersEnded() {
-					return fmt.Errorf("headers should have END_HEADERS be ended: %v", f)
-				}
-				nreq++
-				if nreq == 1 {
-					ct.fr.WriteRSTStream(f.StreamID, ErrCodeRefusedStream)
-				} else {
-					enc.WriteField(hpack.HeaderField{Name: ":status", Value: "204"})
-					ct.fr.WriteHeaders(HeadersFrameParam{
-						StreamID:      f.StreamID,
-						EndHeaders:    true,
-						EndStream:     true,
-						BlockFragment: buf.Bytes(),
-					})
-				}
-			default:
-				return fmt.Errorf("Unexpected client frame %v", f)
-			}
 		}
 	}
-	ct.run()
-}
-
-func TestTransportRetryHasLimit(t *testing.T) {
-	// Skip in short mode because the total expected delay is 1s+2s+4s+8s+16s=29s.
-	if testing.Short() {
-		t.Skip("skipping long test in short mode")
-	}
-	clientDone := make(chan struct{})
-	ct := newClientTester(t)
-	ct.client = func() error {
-		defer ct.cc.(*net.TCPConn).CloseWrite()
-		defer close(clientDone)
-		req, _ := http.NewRequest("GET", "https://dummy.tld/", nil)
-		resp, err := ct.tr.RoundTrip(req)
-		if err == nil {
-			return fmt.Errorf("RoundTrip expected error, got response: %+v", resp)
-		}
-		t.Logf("expected error, got: %v", err)
-		return nil
-	}
-	ct.server = func() error {
-		ct.greet()
-		for {
-			f, err := ct.fr.ReadFrame()
-			if err != nil {
-				select {
-				case <-clientDone:
-					// If the client's done, it
-					// will have reported any
-					// errors on its side.
-					return nil
-				default:
-					return err
-				}
-			}
-			switch f := f.(type) {
-			case *WindowUpdateFrame, *SettingsFrame:
-			case *HeadersFrame:
-				if !f.HeadersEnded() {
-					return fmt.Errorf("headers should have END_HEADERS be ended: %v", f)
-				}
-				ct.fr.WriteRSTStream(f.StreamID, ErrCodeRefusedStream)
-			default:
-				return fmt.Errorf("Unexpected client frame %v", f)
-			}
-		}
-	}
-	ct.run()
-}
-
-func TestTransportResponseDataBeforeHeaders(t *testing.T) {
-	// This test use not valid response format.
-	// Discarding logger output to not spam tests output.
-	log.SetOutput(ioutil.Discard)
-	defer log.SetOutput(os.Stderr)
-
-	ct := newClientTester(t)
-	ct.client = func() error {
-		defer ct.cc.(*net.TCPConn).CloseWrite()
-		req := httptest.NewRequest("GET", "https://dummy.tld/", nil)
-		// First request is normal to ensure the check is per stream and not per connection.
-		_, err := ct.tr.RoundTrip(req)
-		if err != nil {
-			return fmt.Errorf("RoundTrip expected no error, got: %v", err)
-		}
-		// Second request returns a DATA frame with no HEADERS.
-		resp, err := ct.tr.RoundTrip(req)
-		if err == nil {
-			return fmt.Errorf("RoundTrip expected error, got response: %+v", resp)
-		}
-		if err, ok := err.(StreamError); !ok || err.Code != ErrCodeProtocol {
-			return fmt.Errorf("expected stream PROTOCOL_ERROR, got: %v", err)
-		}
-		return nil
-	}
-	ct.server = func() error {
-		ct.greet()
-		for {
-			f, err := ct.fr.ReadFrame()
-			if err == io.EOF {
-				return nil
-			} else if err != nil {
-				return err
-			}
-			switch f := f.(type) {
-			case *WindowUpdateFrame, *SettingsFrame:
-			case *HeadersFrame:
-				switch f.StreamID {
-				case 1:
-					// Send a valid response to first request.
-					var buf bytes.Buffer
-					enc := hpack.NewEncoder(&buf)
-					enc.WriteField(hpack.HeaderField{Name: ":status", Value: "200"})
-					ct.fr.WriteHeaders(HeadersFrameParam{
-						StreamID:      f.StreamID,
-						EndHeaders:    true,
-						EndStream:     true,
-						BlockFragment: buf.Bytes(),
-					})
-				case 3:
-					ct.fr.WriteData(f.StreamID, true, []byte("payload"))
-				}
-			default:
-				return fmt.Errorf("Unexpected client frame %v", f)
-			}
-		}
-	}
-	ct.run()
-}
-
-// tests Transport.StrictMaxConcurrentStreams
-func TestTransportRequestsStallAtServerLimit(t *testing.T) {
-	const maxConcurrent = 2
-
-	greet := make(chan struct{})      // server sends initial SETTINGS frame
-	gotRequest := make(chan struct{}) // server received a request
-	clientDone := make(chan struct{})
-
-	// Collect errors from goroutines.
-	var wg sync.WaitGroup
-	errs := make(chan error, 100)
-	defer func() {
-		wg.Wait()
-		close(errs)
-		for err := range errs {
-			t.Error(err)
-		}
-	}()
-
-	// We will send maxConcurrent+2 requests. This checker goroutine waits for the
-	// following stages:
-	//   1. The first maxConcurrent requests are received by the server.
-	//   2. The client will cancel the next request
-	//   3. The server is unblocked so it can service the first maxConcurrent requests
-	//   4. The client will send the final request
-	wg.Add(1)
-	unblockClient := make(chan struct{})
-	clientRequestCancelled := make(chan struct{})
-	unblockServer := make(chan struct{})
-	go func() {
-		defer wg.Done()
-		// Stage 1.
-		for k := 0; k < maxConcurrent; k++ {
-			<-gotRequest
-		}
-		// Stage 2.
-		close(unblockClient)
-		<-clientRequestCancelled
-		// Stage 3: give some time for the final RoundTrip call to be scheduled and
-		// verify that the final request is not sent.
-		time.Sleep(50 * time.Millisecond)
-		select {
-		case <-gotRequest:
-			errs <- errors.New("last request did not stall")
-			close(unblockServer)
-			return
-		default:
-		}
-		close(unblockServer)
-		// Stage 4.
-		<-gotRequest
-	}()
-
-	ct := newClientTester(t)
-	ct.tr.StrictMaxConcurrentStreams = true
-	ct.client = func() error {
-		var wg sync.WaitGroup
-		defer func() {
-			wg.Wait()
-			close(clientDone)
-			ct.cc.(*net.TCPConn).CloseWrite()
-		}()
-		for k := 0; k < maxConcurrent+2; k++ {
-			wg.Add(1)
-			go func(k int) {
-				defer wg.Done()
-				// Don't send the second request until after receiving SETTINGS from the server
-				// to avoid a race where we use the default SettingMaxConcurrentStreams, which
-				// is much larger than maxConcurrent. We have to send the first request before
-				// waiting because the first request triggers the dial and greet.
-				if k > 0 {
-					<-greet
-				}
-				// Block until maxConcurrent requests are sent before sending any more.
-				if k >= maxConcurrent {
-					<-unblockClient
-				}
-				req, _ := http.NewRequest("GET", fmt.Sprintf("https://dummy.tld/%d", k), nil)
-				if k == maxConcurrent {
-					// This request will be canceled.
-					cancel := make(chan struct{})
-					req.Cancel = cancel
-					close(cancel)
-					_, err := ct.tr.RoundTrip(req)
-					close(clientRequestCancelled)
-					if err == nil {
-						errs <- fmt.Errorf("RoundTrip(%d) should have failed due to cancel", k)
-						return
-					}
-				} else {
-					resp, err := ct.tr.RoundTrip(req)
-					if err != nil {
-						errs <- fmt.Errorf("RoundTrip(%d): %v", k, err)
-						return
-					}
-					ioutil.ReadAll(resp.Body)
-					resp.Body.Close()
-					if resp.StatusCode != 204 {
-						errs <- fmt.Errorf("Status = %v; want 204", resp.StatusCode)
-						return
-					}
-				}
-			}(k)
-		}
-		return nil
-	}
-
-	ct.server = func() error {
-		var wg sync.WaitGroup
-		defer wg.Wait()
-
-		ct.greet(Setting{SettingMaxConcurrentStreams, maxConcurrent})
-
-		// Server write loop.
-		var buf bytes.Buffer
-		enc := hpack.NewEncoder(&buf)
-		writeResp := make(chan uint32, maxConcurrent+1)
-
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			<-unblockServer
-			for id := range writeResp {
-				buf.Reset()
-				enc.WriteField(hpack.HeaderField{Name: ":status", Value: "204"})
-				ct.fr.WriteHeaders(HeadersFrameParam{
-					StreamID:      id,
-					EndHeaders:    true,
-					EndStream:     true,
-					BlockFragment: buf.Bytes(),
-				})
-			}
-		}()
-
-		// Server read loop.
-		var nreq int
-		for {
-			f, err := ct.fr.ReadFrame()
-			if err != nil {
-				select {
-				case <-clientDone:
-					// If the client's done, it will have reported any errors on its side.
-					return nil
-				default:
-					return err
-				}
-			}
-			switch f := f.(type) {
-			case *WindowUpdateFrame:
-			case *SettingsFrame:
-				// Wait for the client SETTINGS ack until ending the greet.
-				close(greet)
-			case *HeadersFrame:
-				if !f.HeadersEnded() {
-					return fmt.Errorf("headers should have END_HEADERS be ended: %v", f)
-				}
-				gotRequest <- struct{}{}
-				nreq++
-				writeResp <- f.StreamID
-				if nreq == maxConcurrent+1 {
-					close(writeResp)
-				}
-			default:
-				return fmt.Errorf("Unexpected client frame %v", f)
-			}
-		}
-	}
-
-	ct.run()
-}
-
-func TestAuthorityAddr(t *testing.T) {
-	tests := []struct {
-		scheme, authority string
-		want              string
-	}{
-		{"http", "foo.com", "foo.com:80"},
-		{"https", "foo.com", "foo.com:443"},
-		{"https", "foo.com:1234", "foo.com:1234"},
-		{"https", "1.2.3.4:1234", "1.2.3.4:1234"},
-		{"https", "1.2.3.4", "1.2.3.4:443"},
-		{"https", "[::1]:1234", "[::1]:1234"},
-		{"https", "[::1]", "[::1]:443"},
-	}
-	for _, tt := range tests {
-		got := authorityAddr(tt.scheme, tt.authority)
-		if got != tt.want {
-			t.Errorf("authorityAddr(%q, %q) = %q; want %q", tt.scheme, tt.authority, got, tt.want)
-		}
-	}
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // Issue 20448: stop allocating for DATA frames' payload after
@@ -4555,6 +4230,14 @@ func (r *errReader) Read(p []byte) (int, error) {
 }
 
 func testTransportBodyReadError(t *testing.T, body []byte) {
+	if runtime.GOOS == "windows" {
+		// So far we've only seen this be flaky on Windows,
+		// perhaps due to TCP behavior on shutdowns while
+		// unread data is in flight. This test should be
+		// fixed, but a skip is better than annoying people
+		// for now.
+		t.Skip("skipping flaky test on Windows; https://golang.org/issue/31260")
+	}
 	clientDone := make(chan struct{})
 	ct := newClientTester(t)
 	ct.client = func() error {
@@ -4601,6 +4284,7 @@ func testTransportBodyReadError(t *testing.T, body []byte) {
 		var resetCount int
 		for {
 			f, err := ct.fr.ReadFrame()
+			t.Logf("server: ReadFrame = %v, %v", f, err)
 			if err != nil {
 				select {
 				case <-clientDone:
@@ -4608,7 +4292,7 @@ func testTransportBodyReadError(t *testing.T, body []byte) {
 					// will have reported any
 					// errors on its side.
 					if bytes.Compare(receivedBody, body) != 0 {
-						return fmt.Errorf("body: %v; expected %v", receivedBody, body)
+						return fmt.Errorf("body: %q; expected %q", receivedBody, body)
 					}
 					if resetCount != 1 {
 						return fmt.Errorf("stream reset count: %v; expected: 1", resetCount)

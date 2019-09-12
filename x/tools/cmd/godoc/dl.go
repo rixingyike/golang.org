@@ -2,11 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-<<<<<<< HEAD
-// +build !golangorg
+// +build !appengine
 
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 package main
 
 import "net/http"

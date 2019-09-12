@@ -49,7 +49,7 @@ CALLEES:
 
 Type info:
 - In the source viewer's lower pane, use a toggle div around the
-  IMPLEMENTS and METHODSETS lists, like we do in the package view.
+  IMPLEMENTS and METHODSETS lists, like we do in the pacakge view.
   Only expand them initially if short.
 - Include IMPLEMENTS and METHOD SETS information in search index.
 - URLs in IMPLEMENTS/METHOD SETS always link to source, even from the
@@ -90,7 +90,7 @@ syntactic constructs that can instantiate it:
     etc
     + all INSTANTIATIONS of all S defined as struct{t T} or [n]T
 (Potentially a lot of information.)
-(Add this to guru too.)
+(Add this to oracle too.)
 
 
 Optimisations

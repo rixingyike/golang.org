@@ -87,11 +87,7 @@ func New384(key []byte) (hash.Hash, error) { return newDigest(Size384, key) }
 func New256(key []byte) (hash.Hash, error) { return newDigest(Size256, key) }
 
 // New returns a new hash.Hash computing the BLAKE2b checksum with a custom length.
-<<<<<<< HEAD
-// A non-nil key turns the hash into a MAC. The key must between zero and 64 bytes long.
-=======
 // A non-nil key turns the hash into a MAC. The key must be between zero and 64 bytes long.
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 // The hash size can be a value between 1 and 64 but it is highly recommended to use
 // values equal or greater than:
 // - 32 if BLAKE2b is used as a hash function (The key is zero bytes long).

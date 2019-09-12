@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 // No testdata on Android.
 
 // +build !android
@@ -11,11 +13,8 @@ package loader_test
 import (
 	"fmt"
 	"go/build"
-	"go/constant"
-	"go/types"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -128,10 +127,6 @@ func TestLoad_MissingInitialPackage(t *testing.T) {
 }
 
 func TestLoad_MissingInitialPackage_AllowErrors(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("gccgo has no standard library test files")
-	}
-
 	var conf loader.Config
 	conf.AllowErrors = true
 	conf.Import("nosuchpkg")
@@ -256,10 +251,6 @@ func TestLoad_FromSource_Success(t *testing.T) {
 }
 
 func TestLoad_FromImports_Success(t *testing.T) {
-	if runtime.Compiler == "gccgo" {
-		t.Skip("gccgo has no standard library test files")
-	}
-
 	var conf loader.Config
 	conf.ImportWithTests("fmt")
 	conf.ImportWithTests("errors")
@@ -405,6 +396,11 @@ func TestCwd(t *testing.T) {
 }
 
 func TestLoad_vendor(t *testing.T) {
+	if buildutil.AllowVendor == 0 {
+		// Vendoring requires Go 1.6.
+		// TODO(adonovan): delete in due course.
+		t.Skip()
+	}
 	pkgs := map[string]string{
 		"a":          `package a; import _ "x"`,
 		"a/vendor":   ``, // mkdir a/vendor
@@ -438,6 +434,11 @@ func TestLoad_vendor(t *testing.T) {
 }
 
 func TestVendorCwd(t *testing.T) {
+	if buildutil.AllowVendor == 0 {
+		// Vendoring requires Go 1.6.
+		// TODO(adonovan): delete in due course.
+		t.Skip()
+	}
 	// Test the interaction of cwd and vendor directories.
 	ctxt := fakeContext(map[string]string{
 		"net":          ``, // mkdir net
@@ -451,8 +452,8 @@ func TestVendorCwd(t *testing.T) {
 	}{
 		{cwd: "/go/src/net", arg: "http"}, // not found
 		{cwd: "/go/src/net", arg: "./http", want: "net/http vendor/hpack"},
-		{cwd: "/go/src/net", arg: "hpack", want: "vendor/hpack"},
-		{cwd: "/go/src/vendor", arg: "hpack", want: "vendor/hpack"},
+		{cwd: "/go/src/net", arg: "hpack", want: "hpack"},
+		{cwd: "/go/src/vendor", arg: "hpack", want: "hpack"},
 		{cwd: "/go/src/vendor", arg: "./hpack", want: "vendor/hpack"},
 	} {
 		conf := loader.Config{
@@ -474,60 +475,6 @@ func TestVendorCwd(t *testing.T) {
 			}
 		}
 	}
-}
-
-func TestVendorCwdIssue16580(t *testing.T) {
-	// Regression test for Go issue 16580.
-	// Import decls in "created" packages were vendor-resolved
-	// w.r.t. cwd, not the parent directory of the package's files.
-	ctxt := fakeContext(map[string]string{
-		"a":          ``, // mkdir a
-		"a/vendor":   ``, // mkdir a/vendor
-		"a/vendor/b": `package b; const X = true`,
-		"b":          `package b; const X = false`,
-	})
-	for _, test := range []struct {
-		filename, cwd string
-		want          bool // expected value of b.X; depends on filename, not on cwd
-	}{
-		{filename: "c.go", cwd: "/go/src", want: false},
-		{filename: "c.go", cwd: "/go/src/a", want: false},
-		{filename: "c.go", cwd: "/go/src/a/b", want: false},
-		{filename: "c.go", cwd: "/go/src/a/vendor/b", want: false},
-
-		{filename: "/go/src/a/c.go", cwd: "/go/src", want: true},
-		{filename: "/go/src/a/c.go", cwd: "/go/src/a", want: true},
-		{filename: "/go/src/a/c.go", cwd: "/go/src/a/b", want: true},
-		{filename: "/go/src/a/c.go", cwd: "/go/src/a/vendor/b", want: true},
-
-		{filename: "/go/src/c/c.go", cwd: "/go/src", want: false},
-		{filename: "/go/src/c/c.go", cwd: "/go/src/a", want: false},
-		{filename: "/go/src/c/c.go", cwd: "/go/src/a/b", want: false},
-		{filename: "/go/src/c/c.go", cwd: "/go/src/a/vendor/b", want: false},
-	} {
-		conf := loader.Config{
-			Cwd:   test.cwd,
-			Build: ctxt,
-		}
-		f, err := conf.ParseFile(test.filename, `package dummy; import "b"; const X = b.X`)
-		if err != nil {
-			t.Fatal(f)
-		}
-		conf.CreateFromFiles("dummy", f)
-
-		prog, err := conf.Load()
-		if err != nil {
-			t.Errorf("%+v: Load failed: %v", test, err)
-			continue
-		}
-
-		x := constant.BoolVal(prog.Created[0].Pkg.Scope().Lookup("X").(*types.Const).Val())
-		if x != test.want {
-			t.Errorf("%+v: b.X = %t", test, x)
-		}
-	}
-
-	// TODO(adonovan): also test imports within XTestGoFiles.
 }
 
 // TODO(adonovan): more Load tests:
@@ -808,18 +755,4 @@ func created(prog *loader.Program) string {
 		pkgs = append(pkgs, info.Pkg.Path())
 	}
 	return strings.Join(pkgs, " ")
-}
-
-// Load package "io" twice in parallel.
-// When run with -race, this is a regression test for Go issue 20718, in
-// which the global "unsafe" package was modified concurrently.
-func TestLoad1(t *testing.T) { loadIO(t) }
-func TestLoad2(t *testing.T) { loadIO(t) }
-
-func loadIO(t *testing.T) {
-	t.Parallel()
-	conf := &loader.Config{ImportPkgs: map[string]bool{"io": false}}
-	if _, err := conf.Load(); err != nil {
-		t.Fatal(err)
-	}
 }

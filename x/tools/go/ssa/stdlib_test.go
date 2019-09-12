@@ -47,9 +47,6 @@ func bytesAllocated() uint64 {
 }
 
 func TestStdlib(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping in short mode; too slow (https://golang.org/issue/14113)")
-	}
 	// Load, parse and type-check the program.
 	t0 := time.Now()
 	alloc0 := bytesAllocated()
@@ -95,7 +92,7 @@ func TestStdlib(t *testing.T) {
 
 	// Keep iprog reachable until after we've measured memory usage.
 	if len(iprog.AllPackages) == 0 {
-		panic("unreachable")
+		print() // unreachable
 	}
 
 	allFuncs := ssautil.AllFunctions(prog)

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build example
+// +build ignore
 //
 // This build tag means that "go install golang.org/x/image/..." doesn't
-// install this example program. Use "go run main.go" to run it or "go install
-// -tags=example" to install it.
+// install this example program. Use "go run main.go" to run it.
 
 // Font is a basic example of using fonts.
 package main

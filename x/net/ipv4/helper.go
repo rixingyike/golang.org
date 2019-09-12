@@ -7,12 +7,9 @@ package ipv4
 import (
 	"errors"
 	"net"
-<<<<<<< HEAD
-=======
 	"runtime"
 
 	"golang.org/x/net/internal/socket"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 )
 
 var (
@@ -27,12 +24,6 @@ var (
 	errNoSuchMulticastInterface = errors.New("no such multicast interface")
 	errNotImplemented           = errors.New("not implemented on " + runtime.GOOS + "/" + runtime.GOARCH)
 
-<<<<<<< HEAD
-	// See http://www.freebsd.org/doc/en/books/porters-handbook/freebsd-versions.html.
-	freebsdVersion uint32
-)
-
-=======
 	// See https://www.freebsd.org/doc/en/books/porters-handbook/versions.html.
 	freebsdVersion  uint32
 	compatFreeBSD32 bool // 386 emulation on amd64
@@ -49,7 +40,6 @@ func adjustFreeBSD32(m *socket.Message) {
 	}
 }
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 func boolint(b bool) int {
 	if b {
 		return 1

@@ -53,11 +53,6 @@ const debugNS = false
 // operate on a path beginning with old, replace that prefix (old) with new
 // and then pass that path to the FileSystem implementation fs.
 //
-// If you do not explicitly mount a FileSystem at the root mountpoint "/" of the
-// NameSpace like above, Stat("/") will return a "not found" error which could
-// break typical directory traversal routines. In such cases, use NewNameSpace()
-// to get a NameSpace pre-initialized with an emulated empty directory at root.
-//
 // Given this name space, a ReadDir of /src/pkg/code will check each prefix
 // of the path for a mount point (first /src/pkg/code, then /src/pkg, then /src,
 // then /), stopping when it finds one.  For the above example, /src/pkg/code
@@ -225,14 +220,11 @@ func (ns NameSpace) Open(path string) (ReadSeekCloser, error) {
 		if debugNS {
 			fmt.Printf("tx %s: %v\n", path, m.translate(path))
 		}
-		tp := m.translate(path)
-		r, err1 := m.fs.Open(tp)
+		r, err1 := m.fs.Open(m.translate(path))
 		if err1 == nil {
 			return r, nil
 		}
-		// IsNotExist errors in overlay FSes can mask real errors in
-		// the underlying FS, so ignore them if there is another error.
-		if err == nil || os.IsNotExist(err) {
+		if err == nil {
 			err = err1
 		}
 	}
@@ -379,20 +371,6 @@ func (ns NameSpace) ReadDir(path string) ([]os.FileInfo, error) {
 
 	sort.Sort(byName(all))
 	return all, nil
-}
-
-// RootType returns the RootType for the given path in the namespace.
-func (ns NameSpace) RootType(path string) RootType {
-	// We resolve the given path to a list of mountedFS and then return
-	// the root type for the filesystem which contains the path.
-	for _, m := range ns.resolve(path) {
-		_, err := m.fs.ReadDir(m.translate(path))
-		// Found a match, return the filesystem's root type
-		if err == nil {
-			return m.fs.RootType(path)
-		}
-	}
-	return ""
 }
 
 // byName implements sort.Interface.

@@ -8,10 +8,7 @@ package ipv6
 
 import (
 	"net"
-<<<<<<< HEAD
-=======
 	"runtime"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	"unsafe"
 
 	"golang.org/x/net/bpf"
@@ -41,11 +38,7 @@ func (so *sockOpt) getICMPFilter(c *socket.Conn) (*ICMPFilter, error) {
 		return nil, err
 	}
 	if n != sizeofICMPv6Filter {
-<<<<<<< HEAD
-		return nil, errOpNoSupport
-=======
 		return nil, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 	return (*ICMPFilter)(unsafe.Pointer(&b[0])), nil
 }
@@ -62,18 +55,11 @@ func (so *sockOpt) getMTUInfo(c *socket.Conn) (*net.Interface, int, error) {
 		return nil, 0, err
 	}
 	if n != sizeofIPv6Mtuinfo {
-<<<<<<< HEAD
-		return nil, 0, errOpNoSupport
-	}
-	mi := (*ipv6Mtuinfo)(unsafe.Pointer(&b[0]))
-	if mi.Addr.Scope_id == 0 {
-=======
 		return nil, 0, errNotImplemented
 	}
 	mi := (*ipv6Mtuinfo)(unsafe.Pointer(&b[0]))
 	if mi.Addr.Scope_id == 0 || runtime.GOOS == "aix" {
 		// AIX kernel might return a wrong address.
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		return nil, int(mi.Mtu), nil
 	}
 	ifi, err := net.InterfaceByIndex(int(mi.Addr.Scope_id))

@@ -41,7 +41,7 @@ type ShakeHash interface {
 
 // cSHAKE specific context
 type cshakeState struct {
-	state // SHA-3 state context and Read/Write operations
+	*state // SHA-3 state context and Read/Write operations
 
 	// initBlock is the cSHAKE specific initialization set of bytes. It is initialized
 	// by newCShake function and stores concatenation of N followed by S, encoded
@@ -82,7 +82,7 @@ func leftEncode(value uint64) []byte {
 }
 
 func newCShake(N, S []byte, rate int, dsbyte byte) ShakeHash {
-	c := cshakeState{state: state{rate: rate, dsbyte: dsbyte}}
+	c := cshakeState{state: &state{rate: rate, dsbyte: dsbyte}}
 
 	// leftEncode returns max 9 bytes
 	c.initBlock = make([]byte, 0, 9*2+len(N)+len(S))
@@ -104,7 +104,7 @@ func (c *cshakeState) Reset() {
 func (c *cshakeState) Clone() ShakeHash {
 	b := make([]byte, len(c.initBlock))
 	copy(b, c.initBlock)
-	return &cshakeState{state: *c.clone(), initBlock: b}
+	return &cshakeState{state: c.clone(), initBlock: b}
 }
 
 // Clone returns copy of SHAKE context within its current state.
@@ -119,11 +119,7 @@ func NewShake128() ShakeHash {
 	if h := newShake128Asm(); h != nil {
 		return h
 	}
-<<<<<<< HEAD
-	return &state{rate: 168, dsbyte: 0x1f}
-=======
 	return &state{rate: rate128, dsbyte: dsbyteShake}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // NewShake256 creates a new SHAKE256 variable-output-length ShakeHash.
@@ -133,9 +129,6 @@ func NewShake256() ShakeHash {
 	if h := newShake256Asm(); h != nil {
 		return h
 	}
-<<<<<<< HEAD
-	return &state{rate: 136, dsbyte: 0x1f}
-=======
 	return &state{rate: rate256, dsbyte: dsbyteShake}
 }
 
@@ -163,7 +156,6 @@ func NewCShake256(N, S []byte) ShakeHash {
 		return NewShake256()
 	}
 	return newCShake(N, S, rate256, dsbyteCShake)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // ShakeSum128 writes an arbitrary-length digest of data into hash.

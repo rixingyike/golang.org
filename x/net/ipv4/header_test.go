@@ -157,12 +157,6 @@ var headerLittleEndianTests = []headerTest{
 }
 
 func TestMarshalHeader(t *testing.T) {
-<<<<<<< HEAD
-	if socket.NativeEndian != binary.LittleEndian {
-		t.Skip("no test for non-little endian machine yet")
-	}
-
-=======
 	for i, tt := range []struct {
 		h   *Header
 		err error
@@ -178,7 +172,6 @@ func TestMarshalHeader(t *testing.T) {
 	if socket.NativeEndian != binary.LittleEndian {
 		t.Skip("no test for non-little endian machine yet")
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	for _, tt := range headerLittleEndianTests {
 		b, err := tt.Header.Marshal()
 		if err != nil {
@@ -207,12 +200,6 @@ func TestMarshalHeader(t *testing.T) {
 }
 
 func TestParseHeader(t *testing.T) {
-<<<<<<< HEAD
-	if socket.NativeEndian != binary.LittleEndian {
-		t.Skip("no test for big endian machine yet")
-	}
-
-=======
 	for i, tt := range []struct {
 		h   *Header
 		wh  []byte
@@ -237,7 +224,6 @@ func TestParseHeader(t *testing.T) {
 	if socket.NativeEndian != binary.LittleEndian {
 		t.Skip("no test for big endian machine yet")
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	for _, tt := range headerLittleEndianTests {
 		var wh []byte
 		switch runtime.GOOS {

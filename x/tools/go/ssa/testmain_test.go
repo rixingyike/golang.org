@@ -17,7 +17,7 @@ import (
 	"golang.org/x/tools/go/ssa/ssautil"
 )
 
-func create(t *testing.T, content string) *ssa.Package {
+func create(t *testing.T, content string) []*ssa.Package {
 	var conf loader.Config
 	f, err := conf.ParseFile("foo_test.go", content)
 	if err != nil {
@@ -25,14 +25,13 @@ func create(t *testing.T, content string) *ssa.Package {
 	}
 	conf.CreateFromFiles("foo", f)
 
-	lprog, err := conf.Load()
+	iprog, err := conf.Load()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// We needn't call Build.
-	foo := lprog.Package("foo").Pkg
-	return ssautil.CreateProgram(lprog, ssa.SanityCheckFunctions).Package(foo)
+	return ssautil.CreateProgram(iprog, ssa.SanityCheckFunctions).AllPackages()
 }
 
 func TestFindTests(t *testing.T) {
@@ -75,8 +74,8 @@ func ExampleD(t *testing.T) {}
 func exampleE() int { return 0 }
 func (T) Example() {}
 `
-	pkg := create(t, test)
-	tests, benchmarks, examples, _ := ssa.FindTests(pkg)
+	pkgs := create(t, test)
+	_, tests, benchmarks, examples := ssa.FindTests(pkgs)
 
 	sort.Sort(funcsByPos(tests))
 	if got, want := fmt.Sprint(tests), "[foo.Test foo.TestA foo.TestB]"; got != want {
@@ -103,8 +102,8 @@ package foo
 func Example() {}
 func ExampleA() {}
 `
-	pkg := create(t, test)
-	tests, benchmarks, examples, _ := ssa.FindTests(pkg)
+	pkgs := create(t, test)
+	_, tests, benchmarks, examples := ssa.FindTests(pkgs)
 	if len(tests) > 0 {
 		t.Errorf("FindTests.tests = %s, want none", tests)
 	}

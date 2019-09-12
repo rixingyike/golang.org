@@ -30,8 +30,6 @@ type Auth struct {
 // variables in the environment and makes underlying connections
 // directly.
 func FromEnvironment() Dialer {
-<<<<<<< HEAD
-=======
 	return FromEnvironmentUsing(Direct)
 }
 
@@ -40,7 +38,6 @@ func FromEnvironment() Dialer {
 // using the provided forwarding Dialer (for instance, a *net.Dialer
 // with desired configuration).
 func FromEnvironmentUsing(forward Dialer) Dialer {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	allProxy := allProxyEnv.Get()
 	if len(allProxy) == 0 {
 		return forward

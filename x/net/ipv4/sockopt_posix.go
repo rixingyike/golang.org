@@ -39,11 +39,7 @@ func (so *sockOpt) getICMPFilter(c *socket.Conn) (*ICMPFilter, error) {
 		return nil, err
 	}
 	if n != sizeofICMPFilter {
-<<<<<<< HEAD
-		return nil, errOpNoSupport
-=======
 		return nil, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 	return (*ICMPFilter)(unsafe.Pointer(&b[0])), nil
 }

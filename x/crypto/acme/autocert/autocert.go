@@ -88,9 +88,9 @@ func defaultHostPolicy(context.Context, string) error {
 }
 
 // Manager is a stateful certificate manager built on top of acme.Client.
-// It obtains and refreshes certificates automatically using "tls-alpn-01",
-// "tls-sni-01", "tls-sni-02" and "http-01" challenge types,
-// as well as providing them to a TLS server via tls.Config.
+// It obtains and refreshes certificates automatically using "tls-alpn-01"
+// or "http-01" challenge types, as well as providing them to a TLS server
+// via tls.Config.
 //
 // You must specify a cache implementation, such as DirCache,
 // to reuse obtained certificates across program restarts.
@@ -184,10 +184,8 @@ type Manager struct {
 	// to be provisioned.
 	// The entries are stored for the duration of the authorization flow.
 	httpTokens map[string][]byte
-	// certTokens contains temporary certificates for tls-sni and tls-alpn challenges
-	// and is keyed by token domain name, which matches server name of ClientHello.
-	// Keys always have ".acme.invalid" suffix for tls-sni. Otherwise, they are domain names
-	// for tls-alpn.
+	// certTokens contains temporary certificates for tls-alpn-01 challenges
+	// and is keyed by the domain name which matches the ClientHello server name.
 	// The entries are stored for the duration of the authorization flow.
 	certTokens map[string]*tls.Certificate
 	// nowFunc, if not nil, returns the current time. This may be set for
@@ -226,7 +224,7 @@ func (m *Manager) TLSConfig() *tls.Config {
 
 // GetCertificate implements the tls.Config.GetCertificate hook.
 // It provides a TLS certificate for hello.ServerName host, including answering
-// tls-alpn-01 and *.acme.invalid (tls-sni-01 and tls-sni-02) challenges.
+// tls-alpn-01 challenges.
 // All other fields of hello are ignored.
 //
 // If m.HostPolicy is non-nil, GetCertificate calls the policy before requesting
@@ -235,9 +233,7 @@ func (m *Manager) TLSConfig() *tls.Config {
 // This does not affect cached certs. See HostPolicy field description for more details.
 //
 // If GetCertificate is used directly, instead of via Manager.TLSConfig, package users will
-// also have to add acme.ALPNProto to NextProtos for tls-alpn-01, or use HTTPHandler
-// for http-01. (The tls-sni-* challenges have been deprecated by popular ACME providers
-// due to security issues in the ecosystem.)
+// also have to add acme.ALPNProto to NextProtos for tls-alpn-01, or use HTTPHandler for http-01.
 func (m *Manager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	if m.Prompt == nil {
 		return nil, errors.New("acme/autocert: Manager.Prompt not set")
@@ -250,9 +246,6 @@ func (m *Manager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, 
 	if !strings.Contains(strings.Trim(name, "."), ".") {
 		return nil, errors.New("acme/autocert: server name component count invalid")
 	}
-<<<<<<< HEAD
-	if strings.ContainsAny(name, `+/\`) {
-=======
 
 	// Note that this conversion is necessary because some server names in the handshakes
 	// started by some clients (such as cURL) are not converted to Punycode, which will
@@ -264,7 +257,6 @@ func (m *Manager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, 
 	// idna.Punycode.ToASCII (or just idna.ToASCII) here.
 	name, err := idna.Lookup.ToASCII(name)
 	if err != nil {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		return nil, errors.New("acme/autocert: server name contains invalid character")
 	}
 
@@ -273,13 +265,10 @@ func (m *Manager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 
-	// Check whether this is a token cert requested for TLS-SNI or TLS-ALPN challenge.
+	// Check whether this is a token cert requested for TLS-ALPN challenge.
 	if wantsTokenCert(hello) {
 		m.tokensMu.RLock()
 		defer m.tokensMu.RUnlock()
-		// It's ok to use the same token cert key for both tls-sni and tls-alpn
-		// because there's always at most 1 token cert per on-going domain authorization.
-		// See m.verify for details.
 		if cert := m.certTokens[name]; cert != nil {
 			return cert, nil
 		}
@@ -322,8 +311,7 @@ func wantsTokenCert(hello *tls.ClientHelloInfo) bool {
 	if len(hello.SupportedProtos) == 1 && hello.SupportedProtos[0] == acme.ALPNProto {
 		return true
 	}
-	// tls-sni-xx
-	return strings.HasSuffix(hello.ServerName, ".acme.invalid")
+	return false
 }
 
 func supportsECDSA(hello *tls.ClientHelloInfo) bool {
@@ -692,7 +680,7 @@ func (m *Manager) revokePendingAuthz(ctx context.Context, uri []string) {
 func (m *Manager) verify(ctx context.Context, client *acme.Client, domain string) error {
 	// The list of challenge types we'll try to fulfill
 	// in this specific order.
-	challengeTypes := []string{"tls-alpn-01", "tls-sni-02", "tls-sni-01"}
+	challengeTypes := []string{"tls-alpn-01"}
 	m.tokensMu.RLock()
 	if m.tryHTTP01 {
 		challengeTypes = append(challengeTypes, "http-01")
@@ -780,20 +768,6 @@ func (m *Manager) fulfill(ctx context.Context, client *acme.Client, chal *acme.C
 		}
 		m.putCertToken(ctx, domain, &cert)
 		return func() { go m.deleteCertToken(domain) }, nil
-	case "tls-sni-01":
-		cert, name, err := client.TLSSNI01ChallengeCert(chal.Token)
-		if err != nil {
-			return nil, err
-		}
-		m.putCertToken(ctx, name, &cert)
-		return func() { go m.deleteCertToken(name) }, nil
-	case "tls-sni-02":
-		cert, name, err := client.TLSSNI02ChallengeCert(chal.Token)
-		if err != nil {
-			return nil, err
-		}
-		m.putCertToken(ctx, name, &cert)
-		return func() { go m.deleteCertToken(name) }, nil
 	case "http-01":
 		resp, err := client.HTTP01ChallengeResponse(chal.Token)
 		if err != nil {
@@ -822,7 +796,6 @@ func (m *Manager) putCertToken(ctx context.Context, name string, cert *tls.Certi
 	defer m.tokensMu.Unlock()
 	if m.certTokens == nil {
 		m.certTokens = make(map[string]*tls.Certificate)
-<<<<<<< HEAD
 	}
 	m.certTokens[name] = cert
 	m.cachePut(ctx, certKey{domain: name, isToken: true}, cert)
@@ -854,39 +827,6 @@ func (m *Manager) httpToken(ctx context.Context, tokenPath string) ([]byte, erro
 	return m.Cache.Get(ctx, httpTokenCacheKey(tokenPath))
 }
 
-=======
-	}
-	m.certTokens[name] = cert
-	m.cachePut(ctx, certKey{domain: name, isToken: true}, cert)
-}
-
-// deleteCertToken removes the token certificate with the specified name
-// from both m.certTokens map and m.Cache.
-func (m *Manager) deleteCertToken(name string) {
-	m.tokensMu.Lock()
-	defer m.tokensMu.Unlock()
-	delete(m.certTokens, name)
-	if m.Cache != nil {
-		ck := certKey{domain: name, isToken: true}
-		m.Cache.Delete(context.Background(), ck.String())
-	}
-}
-
-// httpToken retrieves an existing http-01 token value from an in-memory map
-// or the optional cache.
-func (m *Manager) httpToken(ctx context.Context, tokenPath string) ([]byte, error) {
-	m.tokensMu.RLock()
-	defer m.tokensMu.RUnlock()
-	if v, ok := m.httpTokens[tokenPath]; ok {
-		return v, nil
-	}
-	if m.Cache == nil {
-		return nil, fmt.Errorf("acme/autocert: no token at %q", tokenPath)
-	}
-	return m.Cache.Get(ctx, httpTokenCacheKey(tokenPath))
-}
-
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 // putHTTPToken stores an http-01 token value using tokenPath as key
 // in both in-memory map and the optional Cache.
 //
@@ -1017,6 +957,9 @@ func (m *Manager) acmeClient(ctx context.Context) (*acme.Client, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	if client.UserAgent == "" {
+		client.UserAgent = "autocert"
 	}
 	var contact []string
 	if m.Email != "" {

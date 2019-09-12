@@ -12,7 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 	"testing"
 
@@ -416,45 +415,6 @@ var _ I = E{}
 	}
 }
 
-func TestInvalidIdentifiers(t *testing.T) {
-	ctxt := fakeContext(map[string][]string{
-		"main": {`
-package main
-
-func f() { }
-`}})
-
-	for _, test := range []struct {
-		from, to string // values of the -offset/-from and -to flags
-		want     string // expected error message
-	}{
-		{
-			from: "main.f", to: "_",
-			want: `-to "_": not a valid identifier`,
-		},
-		{
-			from: "main.f", to: "123",
-			want: `-to "123": not a valid identifier`,
-		},
-		{
-			from: "main.f", to: "for",
-			want: `-to "for": not a valid identifier`,
-		},
-		{
-			from: "switch", to: "v",
-			want: `-from "switch": invalid expression`,
-		},
-	} {
-		err := Main(ctxt, "", test.from, test.to)
-		prefix := fmt.Sprintf("-from %q -to %q", test.from, test.to)
-		if err == nil {
-			t.Errorf("%s: expected error %q", prefix, test.want)
-		} else if err.Error() != test.want {
-			t.Errorf("%s: unexpected error\nwant: %s\n got: %s", prefix, test.want, err.Error())
-		}
-	}
-}
-
 func TestRewrites(t *testing.T) {
 	defer func(savedWriteFile func(string, []byte) error) {
 		writeFile = savedWriteFile
@@ -521,138 +481,6 @@ var _ foo.U
 				"/go/src/foo/0.go": `package foo
 
 type U int
-`,
-			},
-		},
-		// Rename package-level func plus doc
-		{
-			ctxt: main(`package main
-
-// Foo is a no-op.
-// Calling Foo does nothing.
-func Foo() {
-}
-`),
-			from: "main.Foo", to: "FooBar",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-// FooBar is a no-op.
-// Calling FooBar does nothing.
-func FooBar() {
-}
-`,
-			},
-		},
-		// Rename method plus doc
-		{
-			ctxt: main(`package main
-
-type Foo struct{}
-
-// Bar does nothing.
-func (Foo) Bar() {
-}
-`),
-			from: "main.Foo.Bar", to: "Baz",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-type Foo struct{}
-
-// Baz does nothing.
-func (Foo) Baz() {
-}
-`,
-			},
-		},
-		// Rename type spec plus doc
-		{
-			ctxt: main(`package main
-
-type (
-	// Test but not Testing.
-	Test struct{}
-)
-`),
-			from: "main.Test", to: "Type",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-type (
-	// Type but not Testing.
-	Type struct{}
-)
-`,
-			},
-		},
-		// Rename type in gen decl plus doc
-		{
-			ctxt: main(`package main
-
-// T is a test type.
-type T struct{}
-`),
-			from: "main.T", to: "Type",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-// Type is a test type.
-type Type struct{}
-`,
-			},
-		},
-		// Rename value spec with doc
-		{
-			ctxt: main(`package main
-
-const (
-	// C is the speed of light.
-	C = 2.998e8
-)
-`),
-			from: "main.C", to: "Lightspeed",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-const (
-	// Lightspeed is the speed of light.
-	Lightspeed = 2.998e8
-)
-`,
-			},
-		},
-		// Rename value inside gen decl with doc
-		{
-			ctxt: main(`package main
-
-var out *string
-`),
-			from: "main.out", to: "discard",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-var discard *string
-`,
-			},
-		},
-		// Rename field plus doc
-		{
-			ctxt: main(`package main
-
-type Struct struct {
-	// Field is a struct field.
-	Field string
-}
-`),
-			from: "main.Struct.Field", to: "Foo",
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-type Struct struct {
-	// Foo is a struct field.
-	Foo string
-}
 `,
 			},
 		},
@@ -948,9 +776,7 @@ type V struct{ foo.U }
 			ctxt: fakeContext(map[string][]string{
 				"main": {`
 package main
-type I interface {
-	f()
-}
+type I interface { f() }
 type J interface { f(); g() }
 type A int
 func (A) f()
@@ -965,7 +791,7 @@ var _, _ J = B(0), C(0)
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#34", to: "F", // abstract method I.f
+			offset: "/go/src/main/0.go:#33", to: "F", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -996,7 +822,7 @@ var _, _ J = B(0), C(0)
 			},
 		},
 		{
-			offset: "/go/src/main/0.go:#59", to: "F", // abstract method J.f
+			offset: "/go/src/main/0.go:#58", to: "F", // abstract method J.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1027,7 +853,7 @@ var _, _ J = B(0), C(0)
 			},
 		},
 		{
-			offset: "/go/src/main/0.go:#64", to: "G", // abstract method J.g
+			offset: "/go/src/main/0.go:#63", to: "G", // abstract method J.g
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1062,9 +888,7 @@ var _, _ J = B(0), C(0)
 			ctxt: fakeContext(map[string][]string{
 				"main": {`
 package main
-type I interface {
-	f()
-}
+type I interface { f() }
 type C int
 func (C) f()
 type D struct{C}
@@ -1072,7 +896,7 @@ var _ I = D{}
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#34", to: "F", // abstract method I.f
+			offset: "/go/src/main/0.go:#33", to: "F", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1094,16 +918,14 @@ var _ I = D{}
 			ctxt: fakeContext(map[string][]string{
 				"main": {`
 package main
-type I interface {
-	f()
-}
+type I interface {f()}
 type C struct{I}
 func (C) g() int
 var _ int = C{}.g()
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#34", to: "g", // abstract method I.f
+			offset: "/go/src/main/0.go:#32", to: "g", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1122,17 +944,13 @@ var _ int = C{}.g()
 		{
 			ctxt: fakeContext(map[string][]string{
 				"main": {`package main
-type I interface{
-	f()
-}
-type J interface{
-	f()
-}
+type I interface{f()}
+type J interface{f()}
 var _ = I(nil).(J)
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#32", to: "g", // abstract method I.f
+			offset: "/go/src/main/0.go:#30", to: "g", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1151,17 +969,13 @@ var _ = I(nil).(J)
 		{
 			ctxt: fakeContext(map[string][]string{
 				"main": {`package main
-type I interface{
-	f()
-}
-type J interface{
-	f()int
-}
+type I interface{f()}
+type J interface{f()int}
 var _ = I(nil).(J)
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#32", to: "g", // abstract method I.f
+			offset: "/go/src/main/0.go:#30", to: "g", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1180,19 +994,15 @@ var _ = I(nil).(J)
 		{
 			ctxt: fakeContext(map[string][]string{
 				"main": {`package main
-type I interface{
-	f()
-}
+type I interface{f()}
 type C int
 func (C) f()
-type J interface{
-	f()int
-}
+type J interface{f()int}
 var _ = I(C(0)).(J)
 `,
 				},
 			}),
-			offset: "/go/src/main/0.go:#32", to: "g", // abstract method I.f
+			offset: "/go/src/main/0.go:#30", to: "g", // abstract method I.f
 			want: map[string]string{
 				"/go/src/main/0.go": `package main
 
@@ -1208,29 +1018,6 @@ type J interface {
 }
 
 var _ = I(C(0)).(J)
-`,
-			},
-		},
-		// Progress after "soft" type errors (Go issue 14596).
-		{
-			ctxt: fakeContext(map[string][]string{
-				"main": {`package main
-
-func main() {
-	var unused, x int
-	print(x)
-}
-`,
-				},
-			}),
-			offset: "/go/src/main/0.go:#54", to: "y", // var x
-			want: map[string]string{
-				"/go/src/main/0.go": `package main
-
-func main() {
-	var unused, y int
-	print(y)
-}
 `,
 			},
 		},
@@ -1277,13 +1064,6 @@ func main() {
 }
 
 func TestDiff(t *testing.T) {
-	switch runtime.GOOS {
-	case "windows", "android":
-		t.Skipf("diff tool non-existent for %s on builders", runtime.GOOS)
-	case "plan9":
-		t.Skipf("plan9 diff tool doesn't support -u flag")
-	}
-
 	defer func() {
 		Diff = false
 		stdout = os.Stdout

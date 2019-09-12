@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package ssa
 
 // This file defines utilities for working with source positions
@@ -150,7 +152,7 @@ func findNamedFunc(pkg *Package, pos token.Pos) *Function {
 // (modulo "untyped" bools resulting from comparisons).
 //
 // (Tip: to find the ssa.Value given a source position, use
-// astutil.PathEnclosingInterval to locate the ast.Node, then
+// importer.PathEnclosingInterval to locate the ast.Node, then
 // EnclosingFunction to locate the Function, then ValueForExpr to find
 // the ssa.Value.)
 //

@@ -57,11 +57,7 @@ func (h *Header) String() string {
 // This may differ from the wire format, depending on the system.
 func (h *Header) Marshal() ([]byte, error) {
 	if h == nil {
-<<<<<<< HEAD
-		return nil, errInvalidConn
-=======
 		return nil, errNilHeader
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 	if h.Len < HeaderLen {
 		return nil, errHeaderTooShort
@@ -111,14 +107,6 @@ func (h *Header) Marshal() ([]byte, error) {
 // local system.
 // This may differ from the wire format, depending on the system.
 func (h *Header) Parse(b []byte) error {
-<<<<<<< HEAD
-	if h == nil || len(b) < HeaderLen {
-		return errHeaderTooShort
-	}
-	hdrlen := int(b[0]&0x0f) << 2
-	if hdrlen > len(b) {
-		return errBufferTooShort
-=======
 	if h == nil || b == nil {
 		return errNilHeader
 	}
@@ -128,7 +116,6 @@ func (h *Header) Parse(b []byte) error {
 	hdrlen := int(b[0]&0x0f) << 2
 	if len(b) < hdrlen {
 		return errExtHeaderTooShort
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 	h.Version = int(b[0] >> 4)
 	h.Len = hdrlen

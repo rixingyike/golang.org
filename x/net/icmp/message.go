@@ -18,22 +18,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"net"
-<<<<<<< HEAD
-=======
 	"runtime"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 	"golang.org/x/net/internal/iana"
 	"golang.org/x/net/ipv4"
 	"golang.org/x/net/ipv6"
 )
 
-<<<<<<< HEAD
-// BUG(mikio): This package is not implemented on AIX, JS, NaCl and
-// Plan 9.
-=======
 // BUG(mikio): This package is not implemented on JS, NaCl and Plan 9.
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 var (
 	errInvalidConn      = errors.New("invalid connection")

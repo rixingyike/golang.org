@@ -26,11 +26,7 @@ var packetConnMulticastSocketOptionTests = []struct {
 
 func TestPacketConnMulticastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsIPv6() {

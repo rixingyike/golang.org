@@ -29,11 +29,7 @@ var packetConnReadWriteMulticastUDPTests = []struct {
 
 func TestPacketConnReadWriteMulticastUDP(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsIPv6() {
@@ -133,11 +129,7 @@ var packetConnReadWriteMulticastICMPTests = []struct {
 
 func TestPacketConnReadWriteMulticastICMP(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsIPv6() {
@@ -213,9 +205,9 @@ func TestPacketConnReadWriteMulticastICMP(t *testing.T) {
 			if toggle {
 				psh = nil
 				if err := p.SetChecksum(true, 2); err != nil {
-					// Solaris never allows to
-					// modify ICMP properties.
-					if runtime.GOOS != "solaris" {
+					// Illumos and Solaris never allow
+					// modification of ICMP properties.
+					if runtime.GOOS != "illumos" && runtime.GOOS != "solaris" {
 						t.Fatal(err)
 					}
 				}

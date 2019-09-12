@@ -665,11 +665,7 @@ func newChaCha20Cipher(key, unusedIV, unusedMACKey []byte, unusedAlgs directionA
 	return c, nil
 }
 
-<<<<<<< HEAD
-func (c *chacha20Poly1305Cipher) readPacket(seqNum uint32, r io.Reader) ([]byte, error) {
-=======
 func (c *chacha20Poly1305Cipher) readCipherPacket(seqNum uint32, r io.Reader) ([]byte, error) {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	nonce := [3]uint32{0, 0, bits.ReverseBytes32(seqNum)}
 	s := chacha20.New(c.contentKey, nonce)
 	var polyKey [32]byte
@@ -727,11 +723,7 @@ func (c *chacha20Poly1305Cipher) readCipherPacket(seqNum uint32, r io.Reader) ([
 	return plain, nil
 }
 
-<<<<<<< HEAD
-func (c *chacha20Poly1305Cipher) writePacket(seqNum uint32, w io.Writer, rand io.Reader, payload []byte) error {
-=======
 func (c *chacha20Poly1305Cipher) writeCipherPacket(seqNum uint32, w io.Writer, rand io.Reader, payload []byte) error {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	nonce := [3]uint32{0, 0, bits.ReverseBytes32(seqNum)}
 	s := chacha20.New(c.contentKey, nonce)
 	var polyKey [32]byte

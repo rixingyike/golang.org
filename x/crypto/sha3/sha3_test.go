@@ -36,12 +36,7 @@ var testDigests = map[string]func() hash.Hash{
 	"SHA3-384":   New384,
 	"SHA3-512":   New512,
 	"Keccak-256": NewLegacyKeccak256,
-<<<<<<< HEAD
-	"SHAKE128":   newHashShake128,
-	"SHAKE256":   newHashShake256,
-=======
 	"Keccak-512": NewLegacyKeccak512,
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // testShakes contains functions that return sha3.ShakeHash instances for
@@ -174,14 +169,11 @@ func TestKeccak(t *testing.T) {
 			[]byte("abc"),
 			"4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45",
 		},
-<<<<<<< HEAD
-=======
 		{
 			NewLegacyKeccak512,
 			[]byte("abc"),
 			"18587dc2ea106b9a1563e32b3312421ca164c7f1f07bc922a9c83d77cea3a1e5d0c69910739025372dc14ac9642629379540c17e2a65b19d77aa511a9d00bb96",
 		},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 
 	for _, u := range tests {
@@ -346,22 +338,25 @@ func TestReset(t *testing.T) {
 func TestClone(t *testing.T) {
 	out1 := make([]byte, 16)
 	out2 := make([]byte, 16)
-	in := sequentialBytes(0x100)
 
-	for _, v := range testShakes {
-		h1 := v.constructor(nil, []byte{0x01})
-		h1.Write([]byte{0x01})
+	// Test for sizes smaller and larger than block size.
+	for _, size := range []int{0x1, 0x100} {
+		in := sequentialBytes(size)
+		for _, v := range testShakes {
+			h1 := v.constructor(nil, []byte{0x01})
+			h1.Write([]byte{0x01})
 
-		h2 := h1.Clone()
+			h2 := h1.Clone()
 
-		h1.Write(in)
-		h1.Read(out1)
+			h1.Write(in)
+			h1.Read(out1)
 
-		h2.Write(in)
-		h2.Read(out2)
+			h2.Write(in)
+			h2.Read(out2)
 
-		if !bytes.Equal(out1, out2) {
-			t.Error("\nExpected:\n", hex.EncodeToString(out1), "\ngot:\n", hex.EncodeToString(out2))
+			if !bytes.Equal(out1, out2) {
+				t.Error("\nExpected:\n", hex.EncodeToString(out1), "\ngot:\n", hex.EncodeToString(out2))
+			}
 		}
 	}
 }
@@ -451,8 +446,6 @@ func Example_mac() {
 	d.Read(h)
 	fmt.Printf("%x\n", h)
 	// Output: 78de2974bd2711d5549ffd32b753ef0f5fa80a0db2556db60f0987eb8a9218ff
-<<<<<<< HEAD
-=======
 }
 
 func ExampleNewCShake256() {
@@ -487,5 +480,4 @@ func ExampleNewCShake256() {
 	//a8db03e71f3e4da5c4eee9d28333cdd355f51cef3c567e59be5beb4ecdbb28f0
 	//a90a4c6ca9af2156eba43dc8398279e6b60dcd56fb21837afe6c308fd4ceb05b9dd98c6ee866ca7dc5a39d53e960f400bcd5a19c8a2d6ec6459f63696543a0d8
 	//85e73a72228d08b46515553ca3a29d47df3047e5d84b12d6c2c63e579f4fd1105716b7838e92e981863907f434bfd4443c9e56ea09da998d2f9b47db71988109
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }

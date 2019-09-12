@@ -60,22 +60,20 @@ func TestStdlib(t *testing.T) {
 	}
 
 	// Determine the set of packages/tests to analyze.
-	var mains []*ssa.Package
+	var testPkgs []*ssa.Package
 	for _, info := range iprog.InitialPackages() {
-		ssapkg := prog.Package(info.Pkg)
-		if main := prog.CreateTestMainPackage(ssapkg); main != nil {
-			mains = append(mains, main)
-		}
+		testPkgs = append(testPkgs, prog.Package(info.Pkg))
 	}
-	if mains == nil {
-		t.Fatal("no tests found in analysis scope")
+	testmain := prog.CreateTestMainPackage(testPkgs...)
+	if testmain == nil {
+		t.Fatal("analysis scope has tests")
 	}
 
 	// Run the analysis.
 	config := &Config{
 		Reflection:     false, // TODO(adonovan): fix remaining bug in rVCallConstraint, then enable.
 		BuildCallGraph: true,
-		Mains:          mains,
+		Mains:          []*ssa.Package{testmain},
 	}
 	// TODO(adonovan): add some query values (affects track bits).
 

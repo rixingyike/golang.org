@@ -35,6 +35,13 @@ func (e UnsupportedError) Error() string {
 	return "tiff: unsupported feature: " + string(e)
 }
 
+// An InternalError reports that an internal error was encountered.
+type InternalError string
+
+func (e InternalError) Error() string {
+	return "tiff: internal error: " + string(e)
+}
+
 var errNoPixels = FormatError("not enough pixel data")
 
 type decoder struct {
@@ -110,10 +117,9 @@ func (d *decoder) ifdUint(p []byte) (u []uint, err error) {
 	return u, nil
 }
 
-// parseIFD decides whether the IFD entry in p is "interesting" and
-// stows away the data in the decoder. It returns the tag number of the
-// entry and an error, if any.
-func (d *decoder) parseIFD(p []byte) (int, error) {
+// parseIFD decides whether the the IFD entry in p is "interesting" and
+// stows away the data in the decoder.
+func (d *decoder) parseIFD(p []byte) error {
 	tag := d.byteOrder.Uint16(p[0:2])
 	switch tag {
 	case tBitsPerSample,
@@ -132,17 +138,17 @@ func (d *decoder) parseIFD(p []byte) (int, error) {
 		tImageWidth:
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		d.features[int(tag)] = val
 	case tColorMap:
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		numcolors := len(val) / 3
 		if len(val)%3 != 0 || numcolors <= 0 || numcolors > 256 {
-			return 0, FormatError("bad ColorMap length")
+			return FormatError("bad ColorMap length")
 		}
 		d.palette = make([]color.Color, numcolors)
 		for i := 0; i < numcolors; i++ {
@@ -160,15 +166,15 @@ func (d *decoder) parseIFD(p []byte) (int, error) {
 		// must terminate the import process gracefully.
 		val, err := d.ifdUint(p)
 		if err != nil {
-			return 0, err
+			return err
 		}
 		for _, v := range val {
 			if v != 1 {
-				return 0, UnsupportedError("sample format")
+				return UnsupportedError("sample format")
 			}
 		}
 	}
-	return int(tag), nil
+	return nil
 }
 
 // readBits reads n bits from the internal buffer starting at the current offset.
@@ -263,9 +269,6 @@ func (d *decoder) decode(dst image.Image, xmin, ymin, xmax, ymax int) error {
 						v = 0xffff - v
 					}
 					img.SetGray16(x, y, color.Gray16{v})
-				}
-				if rMaxX == img.Bounds().Max.X {
-					d.off += 2 * (xmax - img.Bounds().Max.X)
 				}
 			}
 		} else {
@@ -425,16 +428,10 @@ func newDecoder(r io.Reader) (*decoder, error) {
 		return nil, err
 	}
 
-	prevTag := -1
 	for i := 0; i < len(p); i += ifdLen {
-		tag, err := d.parseIFD(p[i : i+ifdLen])
-		if err != nil {
+		if err := d.parseIFD(p[i : i+ifdLen]); err != nil {
 			return nil, err
 		}
-		if tag <= prevTag {
-			return nil, FormatError("tags are not sorted in ascending order")
-		}
-		prevTag = tag
 	}
 
 	d.config.Width = int(d.firstVal(tImageWidth))

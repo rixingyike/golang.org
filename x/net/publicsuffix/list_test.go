@@ -216,19 +216,6 @@ var publicSuffixTestCases = []struct {
 
 	// The .рф rules are
 	// рф (xn--p1ai)
-<<<<<<< HEAD
-	{"xn--p1ai", "xn--p1ai"},
-	{"aaa.xn--p1ai", "xn--p1ai"},
-	{"www.xxx.yyy.xn--p1ai", "xn--p1ai"},
-
-	// The .bd rules are:
-	// *.bd
-	{"bd", "bd"},
-	{"www.bd", "www.bd"},
-	{"zzz.bd", "zzz.bd"},
-	{"www.zzz.bd", "zzz.bd"},
-	{"www.xxx.yyy.zzz.bd", "zzz.bd"},
-=======
 	{"xn--p1ai", "xn--p1ai", true},
 	{"aaa.xn--p1ai", "xn--p1ai", true},
 	{"www.xxx.yyy.xn--p1ai", "xn--p1ai", true},
@@ -271,7 +258,6 @@ var publicSuffixTestCases = []struct {
 	{"uberspace.de", "de", true}, // "de" is in the ICANN DOMAIN section. See footnote (†).
 	{"aaa.uberspace.de", "aaa.uberspace.de", false},
 	{"bbb.ccc.uberspace.de", "ccc.uberspace.de", false},
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 	// There are no .nosuchtld rules.
 	{"nosuchtld", "nosuchtld", false},

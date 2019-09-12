@@ -519,7 +519,9 @@ func TestRectDstMask(t *testing.T) {
 		for _, dstMaskP := range dstMaskPs {
 			dstInside := mk(q, nil, image.Point{})
 			for _, wrap := range []bool{false, true} {
-				dstMask := image.Image(rect)
+				// TODO: replace "rectImage(rect)" with "rect" once Go 1.5 is
+				// released, where an image.Rectangle implements image.Image.
+				dstMask := image.Image(rectImage(rect))
 				if wrap {
 					dstMask = srcWrapper{dstMask}
 				}
@@ -549,15 +551,17 @@ func TestRectDstMask(t *testing.T) {
 	}
 }
 
-func TestDstMaskSameSizeCopy(t *testing.T) {
-	bounds := image.Rect(0, 0, 42, 42)
-	src := image.Opaque
-	dst := image.NewRGBA(bounds)
-	mask := image.NewRGBA(bounds)
+// TODO: delete this wrapper type once Go 1.5 is released, where an
+// image.Rectangle implements image.Image.
+type rectImage image.Rectangle
 
-	Copy(dst, image.ZP, src, bounds, Src, &Options{
-		DstMask: mask,
-	})
+func (r rectImage) ColorModel() color.Model { return color.Alpha16Model }
+func (r rectImage) Bounds() image.Rectangle { return image.Rectangle(r) }
+func (r rectImage) At(x, y int) color.Color {
+	if (image.Point{x, y}).In(image.Rectangle(r)) {
+		return color.Opaque
+	}
+	return color.Transparent
 }
 
 // The fooWrapper types wrap the dst or src image to avoid triggering the

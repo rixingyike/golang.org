@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package interp
 
 // Values
@@ -382,7 +384,7 @@ func writeValue(buf *bytes.Buffer, v value) {
 	case *hashmap:
 		buf.WriteString("map[")
 		sep := " "
-		for _, e := range v.entries() {
+		for _, e := range v.table {
 			for e != nil {
 				buf.WriteString(sep)
 				sep = " "

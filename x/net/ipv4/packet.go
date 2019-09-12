@@ -28,10 +28,6 @@ func (c *packetHandler) ok() bool { return c != nil && c.IPConn != nil && c.Conn
 func (c *packetHandler) ReadFrom(b []byte) (h *Header, p []byte, cm *ControlMessage, err error) {
 	if !c.ok() {
 		return nil, nil, nil, errInvalidConn
-<<<<<<< HEAD
-	}
-	return c.readFrom(b)
-=======
 	}
 	c.rawOpt.RLock()
 	m := socket.Message{
@@ -62,7 +58,6 @@ func (c *packetHandler) ReadFrom(b []byte) (h *Header, p []byte, cm *ControlMess
 		cm.Src = src.IP
 	}
 	return
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 func slicePacket(b []byte) (h, p []byte, err error) {
@@ -96,10 +91,6 @@ func slicePacket(b []byte) (h, p []byte, err error) {
 func (c *packetHandler) WriteTo(h *Header, p []byte, cm *ControlMessage) error {
 	if !c.ok() {
 		return errInvalidConn
-<<<<<<< HEAD
-	}
-	return c.writeTo(h, p, cm)
-=======
 	}
 	m := socket.Message{
 		OOB: cm.Marshal(),
@@ -123,5 +114,4 @@ func (c *packetHandler) WriteTo(h *Header, p []byte, cm *ControlMessage) error {
 		return &net.OpError{Op: "write", Net: c.IPConn.LocalAddr().Network(), Source: c.IPConn.LocalAddr(), Addr: opAddr(dst), Err: err}
 	}
 	return nil
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }

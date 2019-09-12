@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 // No testdata on Android.
 
 // +build !android
@@ -11,7 +13,7 @@ package eg_test
 import (
 	"bytes"
 	"flag"
-	"go/constant"
+	exact "go/constant"
 	"go/parser"
 	"go/token"
 	"go/types"
@@ -78,12 +80,6 @@ func Test(t *testing.T) {
 		"testdata/H.template",
 		"testdata/H1.go",
 
-		"testdata/I.template",
-		"testdata/I1.go",
-
-		"testdata/J.template",
-		"testdata/J1.go",
-
 		"testdata/bad_type.template",
 		"testdata/no_before.template",
 		"testdata/no_after_return.template",
@@ -110,7 +106,7 @@ func Test(t *testing.T) {
 			if err != nil {
 				if shouldFail == nil {
 					t.Errorf("NewTransformer(%s): %s", filename, err)
-				} else if want := constant.StringVal(shouldFail.Val()); !strings.Contains(err.Error(), want) {
+				} else if want := exact.StringVal(shouldFail.Val()); !strings.Contains(err.Error(), want) {
 					t.Errorf("NewTransformer(%s): got error %q, want error %q", filename, err, want)
 				}
 			} else if shouldFail != nil {

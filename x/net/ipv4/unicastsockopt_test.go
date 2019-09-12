@@ -16,11 +16,7 @@ import (
 
 func TestConnUnicastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if _, err := nettest.RoutedInterface("ip4", net.FlagUp|net.FlagLoopback); err != nil {
@@ -65,11 +61,7 @@ var packetConnUnicastSocketOptionTests = []struct {
 
 func TestPacketConnUnicastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if _, err := nettest.RoutedInterface("ip4", net.FlagUp|net.FlagLoopback); err != nil {
@@ -94,11 +86,7 @@ func TestPacketConnUnicastSocketOptions(t *testing.T) {
 
 func TestRawConnUnicastSocketOptions(t *testing.T) {
 	switch runtime.GOOS {
-<<<<<<< HEAD
-	case "js", "nacl", "plan9", "windows":
-=======
 	case "fuchsia", "hurd", "js", "nacl", "plan9", "windows":
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
 	if !nettest.SupportsRawSocket() {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 // No testdata on Android.
 
 // +build !android
@@ -30,7 +32,6 @@ var inputs = []string{
 	"testdata/func.go",
 	"testdata/iface.go",
 	"testdata/recv.go",
-	"testdata/issue23925.go",
 }
 
 func expectation(f *ast.File) (string, token.Pos) {

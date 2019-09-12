@@ -4,8 +4,6 @@ package number
 
 import "strconv"
 
-<<<<<<< HEAD
-=======
 func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
@@ -20,7 +18,6 @@ func _() {
 	_ = x[numModes-7]
 }
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 const _RoundingMode_name = "ToNearestEvenToNearestZeroToNearestAwayToPositiveInfToNegativeInfToZeroAwayFromZeronumModes"
 
 var _RoundingMode_index = [...]uint8{0, 13, 26, 39, 52, 65, 71, 83, 91}

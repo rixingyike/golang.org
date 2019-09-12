@@ -109,6 +109,13 @@ type Client struct {
 	// The jitter is a random value up to 1 second.
 	RetryBackoff func(n int, r *http.Request, resp *http.Response) time.Duration
 
+	// UserAgent is prepended to the User-Agent header sent to the ACME server,
+	// which by default is this package's name and version.
+	//
+	// Reusable libraries and tools in particular should set this value to be
+	// identifiable by the server, in case they are causing issues.
+	UserAgent string
+
 	dirMu sync.Mutex // guards writes to dir
 	dir   *Directory // cached result of Client's Discover method
 
@@ -128,15 +135,7 @@ func (c *Client) Discover(ctx context.Context) (Directory, error) {
 		return *c.dir, nil
 	}
 
-<<<<<<< HEAD
-	dirURL := c.DirectoryURL
-	if dirURL == "" {
-		dirURL = LetsEncryptURL
-	}
-	res, err := c.get(ctx, dirURL, wantStatus(http.StatusOK))
-=======
 	res, err := c.get(ctx, c.directoryURL(), wantStatus(http.StatusOK))
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	if err != nil {
 		return Directory{}, err
 	}

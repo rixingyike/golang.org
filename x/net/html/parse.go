@@ -439,12 +439,6 @@ func (p *parser) resetInsertionMode() {
 		case a.Select:
 			if !last {
 				for ancestor, first := n, p.oe[0]; ancestor != first; {
-<<<<<<< HEAD
-					if ancestor == first {
-						break
-					}
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					ancestor = p.oe[p.oe.index(ancestor)-1]
 					switch ancestor.DataAtom {
 					case a.Template:
@@ -707,8 +701,6 @@ func inHeadIM(p *parser) bool {
 	return false
 }
 
-<<<<<<< HEAD
-=======
 // 12.2.6.4.5.
 func inHeadNoscriptIM(p *parser) bool {
 	switch p.tok.Type {
@@ -752,7 +744,6 @@ func inHeadNoscriptIM(p *parser) bool {
 	return false
 }
 
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 // Section 12.2.6.4.6.
 func afterHeadIM(p *parser) bool {
 	switch p.tok.Type {
@@ -2357,17 +2348,8 @@ func ParseWithOptions(r io.Reader, opts ...ParseOption) (*Node, error) {
 	return p.doc, nil
 }
 
-<<<<<<< HEAD
-// ParseFragment parses a fragment of HTML and returns the nodes that were
-// found. If the fragment is the InnerHTML for an existing element, pass that
-// element in context.
-//
-// It has the same intricacies as Parse.
-func ParseFragment(r io.Reader, context *Node) ([]*Node, error) {
-=======
 // ParseFragmentWithOptions is like ParseFragment, with options.
 func ParseFragmentWithOptions(r io.Reader, context *Node, opts ...ParseOption) ([]*Node, error) {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	contextTag := ""
 	if context != nil {
 		if context.Type != ElementNode {

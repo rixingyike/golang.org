@@ -232,14 +232,6 @@ func TestMarshalAndParseMultipartMessage(t *testing.T) {
 							Type:  2,
 							Index: 911,
 						},
-<<<<<<< HEAD
-						&icmp.InterfaceIdent{
-							Class: 3,
-							Type:  1,
-							Name:  "en101",
-						},
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 					},
 				},
 			},
@@ -364,14 +356,6 @@ func TestMarshalAndParseMultipartMessage(t *testing.T) {
 					Extensions: []icmp.Extension{
 						&icmp.InterfaceIdent{
 							Class: 3,
-<<<<<<< HEAD
-							Type:  1,
-							Name:  "en101",
-						},
-						&icmp.InterfaceIdent{
-							Class: 3,
-=======
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 							Type:  2,
 							Index: 911,
 						},
@@ -424,11 +408,7 @@ func dumpExtensions(gotExts, wantExts []icmp.Extension) string {
 		}
 	}
 	if len(s) == 0 {
-<<<<<<< HEAD
-		return "<nil>"
-=======
 		s += "empty extension"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 	return s[:len(s)-1]
 }

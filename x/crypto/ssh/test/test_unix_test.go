@@ -306,9 +306,6 @@ func newServerForConfig(t *testing.T, config string, configVars map[string]strin
 	if err != nil {
 		t.Fatalf("user.Current: %v", err)
 	}
-<<<<<<< HEAD
-	if u.Name == "root" {
-=======
 	uname := u.Name
 	if uname == "" {
 		// Check the value of u.Username as u.Name
@@ -316,7 +313,6 @@ func newServerForConfig(t *testing.T, config string, configVars map[string]strin
 		uname = u.Username
 	}
 	if uname == "root" {
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		t.Skip("skipping test because current user is root")
 	}
 	dir, err := ioutil.TempDir("", "sshtest")

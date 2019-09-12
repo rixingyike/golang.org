@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// +build go1.5
+
 package ssa
 
 // This file implements the BUILD phase of SSA construction.
@@ -32,7 +34,7 @@ package ssa
 import (
 	"fmt"
 	"go/ast"
-	"go/constant"
+	exact "go/constant"
 	"go/token"
 	"go/types"
 	"os"
@@ -58,12 +60,12 @@ var (
 	tString     = types.Typ[types.String]
 	tUntypedNil = types.Typ[types.UntypedNil]
 	tRangeIter  = &opaqueType{nil, "iter"} // the type of all "range" iterators
-	tEface      = types.NewInterface(nil, nil).Complete()
+	tEface      = new(types.Interface)
 
 	// SSA Value constants.
 	vZero = intConst(0)
 	vOne  = intConst(1)
-	vTrue = NewConst(constant.MakeBool(true), tBool)
+	vTrue = NewConst(exact.MakeBool(true), tBool)
 )
 
 // builder holds state associated with the package currently being built.
@@ -131,11 +133,11 @@ func (b *builder) logicalBinop(fn *Function, e *ast.BinaryExpr) Value {
 	switch e.Op {
 	case token.LAND:
 		b.cond(fn, e.X, rhs, done)
-		short = NewConst(constant.MakeBool(false), t)
+		short = NewConst(exact.MakeBool(false), t)
 
 	case token.LOR:
 		b.cond(fn, e.X, done, rhs)
-		short = NewConst(constant.MakeBool(true), t)
+		short = NewConst(exact.MakeBool(true), t)
 	}
 
 	// Is rhs unreachable?
@@ -154,7 +156,7 @@ func (b *builder) logicalBinop(fn *Function, e *ast.BinaryExpr) Value {
 
 	// All edges from e.X to done carry the short-circuit value.
 	var edges []Value
-	for range done.Preds {
+	for _ = range done.Preds {
 		edges = append(edges, short)
 	}
 
@@ -969,10 +971,10 @@ func (b *builder) setCall(fn *Function, e *ast.CallExpr, c *CallCommon) {
 	c.Args = b.emitCallArgs(fn, sig, e, c.Args)
 }
 
-// assignOp emits to fn code to perform loc <op>= val.
-func (b *builder) assignOp(fn *Function, loc lvalue, val Value, op token.Token, pos token.Pos) {
+// assignOp emits to fn code to perform loc += incr or loc -= incr.
+func (b *builder) assignOp(fn *Function, loc lvalue, incr Value, op token.Token) {
 	oldv := loc.load(fn)
-	loc.store(fn, emitArith(fn, op, oldv, emitConv(fn, val, oldv.Type()), loc.typ(), pos))
+	loc.store(fn, emitArith(fn, op, oldv, emitConv(fn, incr, oldv.Type()), loc.typ(), token.NoPos))
 }
 
 // localValueSpec emits to fn code to define all of the vars in the
@@ -1998,7 +2000,7 @@ start:
 			op = token.SUB
 		}
 		loc := b.addr(fn, s.X, false)
-		b.assignOp(fn, loc, NewConst(constant.MakeInt64(1), loc.typ()), op, s.Pos())
+		b.assignOp(fn, loc, NewConst(exact.MakeInt64(1), loc.typ()), op)
 
 	case *ast.AssignStmt:
 		switch s.Tok {
@@ -2007,7 +2009,7 @@ start:
 
 		default: // +=, etc.
 			op := s.Tok + token.ADD - token.ADD_ASSIGN
-			b.assignOp(fn, b.addr(fn, s.Lhs[0], false), b.expr(fn, s.Rhs[0]), op, s.Pos())
+			b.assignOp(fn, b.addr(fn, s.Lhs[0], false), b.expr(fn, s.Rhs[0]), op)
 		}
 
 	case *ast.GoStmt:
@@ -2225,13 +2227,13 @@ func (b *builder) buildFuncDecl(pkg *Package, decl *ast.FuncDecl) {
 	b.buildFunction(fn)
 }
 
-// Build calls Package.Build for each package in prog.
+// BuildAll calls Package.Build() for each package in prog.
 // Building occurs in parallel unless the BuildSerially mode flag was set.
 //
-// Build is intended for whole-program analysis; a typical compiler
+// BuildAll is intended for whole-program analysis; a typical compiler
 // need only build a single package.
 //
-// Build is idempotent and thread-safe.
+// BuildAll is idempotent and thread-safe.
 //
 func (prog *Program) Build() {
 	var wg sync.WaitGroup
@@ -2262,6 +2264,10 @@ func (p *Package) Build() { p.buildOnce.Do(p.build) }
 func (p *Package) build() {
 	if p.info == nil {
 		return // synthetic package, e.g. "testmain"
+	}
+	if p.files == nil {
+		p.info = nil
+		return // package loaded from export data
 	}
 
 	// Ensure we have runtime type info for all exported members.

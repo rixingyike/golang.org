@@ -18,11 +18,7 @@ func (c *dgramOpt) MulticastHopLimit() (int, error) {
 	}
 	so, ok := sockOpts[ssoMulticastHopLimit]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return 0, errOpNoSupport
-=======
 		return 0, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.GetInt(c.Conn)
 }
@@ -35,11 +31,7 @@ func (c *dgramOpt) SetMulticastHopLimit(hoplim int) error {
 	}
 	so, ok := sockOpts[ssoMulticastHopLimit]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.SetInt(c.Conn, hoplim)
 }
@@ -52,11 +44,7 @@ func (c *dgramOpt) MulticastInterface() (*net.Interface, error) {
 	}
 	so, ok := sockOpts[ssoMulticastInterface]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return nil, errOpNoSupport
-=======
 		return nil, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.getMulticastInterface(c.Conn)
 }
@@ -69,11 +57,7 @@ func (c *dgramOpt) SetMulticastInterface(ifi *net.Interface) error {
 	}
 	so, ok := sockOpts[ssoMulticastInterface]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.setMulticastInterface(c.Conn, ifi)
 }
@@ -86,11 +70,7 @@ func (c *dgramOpt) MulticastLoopback() (bool, error) {
 	}
 	so, ok := sockOpts[ssoMulticastLoopback]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return false, errOpNoSupport
-=======
 		return false, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	on, err := so.GetInt(c.Conn)
 	if err != nil {
@@ -107,11 +87,7 @@ func (c *dgramOpt) SetMulticastLoopback(on bool) error {
 	}
 	so, ok := sockOpts[ssoMulticastLoopback]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.SetInt(c.Conn, boolint(on))
 }
@@ -131,11 +107,7 @@ func (c *dgramOpt) JoinGroup(ifi *net.Interface, group net.Addr) error {
 	}
 	so, ok := sockOpts[ssoJoinGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -153,11 +125,7 @@ func (c *dgramOpt) LeaveGroup(ifi *net.Interface, group net.Addr) error {
 	}
 	so, ok := sockOpts[ssoLeaveGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -178,11 +146,7 @@ func (c *dgramOpt) JoinSourceSpecificGroup(ifi *net.Interface, group, source net
 	}
 	so, ok := sockOpts[ssoJoinSourceGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -203,11 +167,7 @@ func (c *dgramOpt) LeaveSourceSpecificGroup(ifi *net.Interface, group, source ne
 	}
 	so, ok := sockOpts[ssoLeaveSourceGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -229,11 +189,7 @@ func (c *dgramOpt) ExcludeSourceSpecificGroup(ifi *net.Interface, group, source 
 	}
 	so, ok := sockOpts[ssoBlockSourceGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -254,11 +210,7 @@ func (c *dgramOpt) IncludeSourceSpecificGroup(ifi *net.Interface, group, source 
 	}
 	so, ok := sockOpts[ssoUnblockSourceGroup]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	grp := netAddrToIP16(group)
 	if grp == nil {
@@ -281,11 +233,7 @@ func (c *dgramOpt) Checksum() (on bool, offset int, err error) {
 	}
 	so, ok := sockOpts[ssoChecksum]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return false, 0, errOpNoSupport
-=======
 		return false, 0, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	offset, err = so.GetInt(c.Conn)
 	if err != nil {
@@ -306,11 +254,7 @@ func (c *dgramOpt) SetChecksum(on bool, offset int) error {
 	}
 	so, ok := sockOpts[ssoChecksum]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	if !on {
 		offset = -1
@@ -325,11 +269,7 @@ func (c *dgramOpt) ICMPFilter() (*ICMPFilter, error) {
 	}
 	so, ok := sockOpts[ssoICMPFilter]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return nil, errOpNoSupport
-=======
 		return nil, errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.getICMPFilter(c.Conn)
 }
@@ -341,11 +281,7 @@ func (c *dgramOpt) SetICMPFilter(f *ICMPFilter) error {
 	}
 	so, ok := sockOpts[ssoICMPFilter]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.setICMPFilter(c.Conn, f)
 }
@@ -359,11 +295,7 @@ func (c *dgramOpt) SetBPF(filter []bpf.RawInstruction) error {
 	}
 	so, ok := sockOpts[ssoAttachFilter]
 	if !ok {
-<<<<<<< HEAD:x/net/ipv6/dgramopt.go
-		return errOpNoSupport
-=======
 		return errNotImplemented
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a:x/net/ipv6/dgramopt.go
 	}
 	return so.setBPF(c.Conn, filter)
 }

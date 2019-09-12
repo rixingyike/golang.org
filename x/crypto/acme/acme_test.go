@@ -75,10 +75,7 @@ func TestDiscover(t *testing.T) {
 	)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-<<<<<<< HEAD
-=======
 		w.Header().Set("Replay-Nonce", "testnonce")
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 		fmt.Fprintf(w, `{
 			"new-reg": %q,
 			"new-authz": %q,
@@ -299,16 +296,6 @@ func TestGetReg(t *testing.T) {
 }
 
 func TestAuthorize(t *testing.T) {
-<<<<<<< HEAD
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "HEAD" {
-			w.Header().Set("Replay-Nonce", "test-nonce")
-			return
-		}
-		if r.Method != "POST" {
-			t.Errorf("r.Method = %q; want POST", r.Method)
-		}
-=======
 	tt := []struct{ typ, value string }{
 		{"dns", "example.com"},
 		{"ip", "1.2.3.4"},
@@ -323,7 +310,6 @@ func TestAuthorize(t *testing.T) {
 				if r.Method != "POST" {
 					t.Errorf("r.Method = %q; want POST", r.Method)
 				}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 				var j struct {
 					Resource   string
@@ -418,29 +404,6 @@ func TestAuthorize(t *testing.T) {
 				t.Errorf("c.Token = %q; want token1", c.Token)
 			}
 
-<<<<<<< HEAD
-	c := auth.Challenges[0]
-	if c.Type != "http-01" {
-		t.Errorf("c.Type = %q; want http-01", c.Type)
-	}
-	if c.URI != "https://ca.tld/acme/challenge/publickey/id1" {
-		t.Errorf("c.URI = %q; want https://ca.tld/acme/challenge/publickey/id1", c.URI)
-	}
-	if c.Token != "token1" {
-		t.Errorf("c.Token = %q; want token1", c.Token)
-	}
-
-	c = auth.Challenges[1]
-	if c.Type != "tls-sni-01" {
-		t.Errorf("c.Type = %q; want tls-sni-01", c.Type)
-	}
-	if c.URI != "https://ca.tld/acme/challenge/publickey/id2" {
-		t.Errorf("c.URI = %q; want https://ca.tld/acme/challenge/publickey/id2", c.URI)
-	}
-	if c.Token != "token2" {
-		t.Errorf("c.Token = %q; want token2", c.Token)
-	}
-=======
 			c = auth.Challenges[1]
 			if c.Type != "tls-sni-01" {
 				t.Errorf("c.Type = %q; want tls-sni-01", c.Type)
@@ -456,7 +419,6 @@ func TestAuthorize(t *testing.T) {
 			if !reflect.DeepEqual(auth.Combinations, combs) {
 				t.Errorf("auth.Combinations: %+v\nwant: %+v\n", auth.Combinations, combs)
 			}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 		})
 	}
@@ -576,7 +538,6 @@ func TestWaitAuthorization(t *testing.T) {
 		}
 		if authz == nil {
 			t.Fatal("authz is nil")
-<<<<<<< HEAD
 		}
 	})
 	t.Run("invalid status", func(t *testing.T) {
@@ -600,31 +561,6 @@ func TestWaitAuthorization(t *testing.T) {
 			t.Errorf("res.StatusCode = %d; want %d", res.StatusCode, code)
 		}
 	})
-=======
-		}
-	})
-	t.Run("invalid status", func(t *testing.T) {
-		_, err := runWaitAuthorization(context.Background(), t, func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, `{"status":"invalid"}`)
-		})
-		if _, ok := err.(*AuthorizationError); !ok {
-			t.Errorf("err is %v (%T); want non-nil *AuthorizationError", err, err)
-		}
-	})
-	t.Run("non-retriable error", func(t *testing.T) {
-		const code = http.StatusBadRequest
-		_, err := runWaitAuthorization(context.Background(), t, func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(code)
-		})
-		res, ok := err.(*Error)
-		if !ok {
-			t.Fatalf("err is %v (%T); want a non-nil *Error", err, err)
-		}
-		if res.StatusCode != code {
-			t.Errorf("res.StatusCode = %d; want %d", res.StatusCode, code)
-		}
-	})
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	for _, code := range []int{http.StatusTooManyRequests, http.StatusInternalServerError} {
 		t.Run(fmt.Sprintf("retriable %d error", code), func(t *testing.T) {
 			var count int

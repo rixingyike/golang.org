@@ -56,15 +56,6 @@ func testPacketCipher(t *testing.T, cipher, mac string) {
 	want := "bla bla"
 	input := []byte(want)
 	buf := &bytes.Buffer{}
-<<<<<<< HEAD
-	if err := client.writePacket(0, buf, rand.Reader, input); err != nil {
-		t.Fatalf("writePacket(%q, %q): %v", cipher, mac, err)
-	}
-
-	packet, err := server.readPacket(0, buf)
-	if err != nil {
-		t.Fatalf("readPacket(%q, %q): %v", cipher, mac, err)
-=======
 	if err := client.writeCipherPacket(0, buf, rand.Reader, input); err != nil {
 		t.Fatalf("writeCipherPacket(%q, %q): %v", cipher, mac, err)
 	}
@@ -72,7 +63,6 @@ func testPacketCipher(t *testing.T, cipher, mac string) {
 	packet, err := server.readCipherPacket(0, buf)
 	if err != nil {
 		t.Fatalf("readCipherPacket(%q, %q): %v", cipher, mac, err)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 
 	if string(packet) != want {

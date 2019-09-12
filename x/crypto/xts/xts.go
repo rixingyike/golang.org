@@ -27,10 +27,7 @@ import (
 	"crypto/cipher"
 	"encoding/binary"
 	"errors"
-<<<<<<< HEAD
-=======
 	"sync"
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 	"golang.org/x/crypto/internal/subtle"
 )
@@ -82,14 +79,10 @@ func (c *Cipher) Encrypt(ciphertext, plaintext []byte, sectorNum uint64) {
 		panic("xts: invalid buffer overlap")
 	}
 
-<<<<<<< HEAD
-	var tweak [blockSize]byte
-=======
 	tweak := tweakPool.Get().(*[blockSize]byte)
 	for i := range tweak {
 		tweak[i] = 0
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	binary.LittleEndian.PutUint64(tweak[:8], sectorNum)
 
 	c.k2.Encrypt(tweak[:], tweak[:])
@@ -125,14 +118,10 @@ func (c *Cipher) Decrypt(plaintext, ciphertext []byte, sectorNum uint64) {
 		panic("xts: invalid buffer overlap")
 	}
 
-<<<<<<< HEAD
-	var tweak [blockSize]byte
-=======
 	tweak := tweakPool.Get().(*[blockSize]byte)
 	for i := range tweak {
 		tweak[i] = 0
 	}
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	binary.LittleEndian.PutUint64(tweak[:8], sectorNum)
 
 	c.k2.Encrypt(tweak[:], tweak[:])

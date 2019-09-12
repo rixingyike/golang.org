@@ -512,22 +512,14 @@ func (r *keyringExtended) Extension(extensionType string, contents []byte) ([]by
 func TestAgentExtensions(t *testing.T) {
 	agent, _, cleanup := startOpenSSHAgent(t)
 	defer cleanup()
-<<<<<<< HEAD
-	result, err := agent.Extension("my-extension@example.com", []byte{0x00, 0x01, 0x02})
-=======
 	_, err := agent.Extension("my-extension@example.com", []byte{0x00, 0x01, 0x02})
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	if err == nil {
 		t.Fatal("should have gotten agent extension failure")
 	}
 
 	agent, cleanup = startAgent(t, &keyringExtended{})
 	defer cleanup()
-<<<<<<< HEAD
-	result, err = agent.Extension("my-extension@example.com", []byte{0x00, 0x01, 0x02})
-=======
 	result, err := agent.Extension("my-extension@example.com", []byte{0x00, 0x01, 0x02})
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	if err != nil {
 		t.Fatalf("agent extension failure: %v", err)
 	}
@@ -535,11 +527,7 @@ func TestAgentExtensions(t *testing.T) {
 		t.Fatalf("agent extension result invalid: %v", result)
 	}
 
-<<<<<<< HEAD
-	result, err = agent.Extension("bad-extension@example.com", []byte{0x00, 0x01, 0x02})
-=======
 	_, err = agent.Extension("bad-extension@example.com", []byte{0x00, 0x01, 0x02})
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	if err == nil {
 		t.Fatal("should have gotten agent extension failure")
 	}

@@ -19,12 +19,7 @@ package main
 // The per-rune values have the following format:
 //
 //   if (exception) {
-<<<<<<< HEAD
-//     15..5  unsigned exception index
-//         4  unused
-=======
 //     15..4  unsigned exception index
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 //   } else {
 //     15..8  XOR pattern or index to XOR pattern for case mapping
 //            Only 13..8 are used for XOR patterns.

@@ -335,11 +335,7 @@ func makeException(ri *runeInfo) {
 	ri.entry |= exceptionBit
 
 	if len(exceptionData) >= 1<<numExceptionBits {
-<<<<<<< HEAD
-		log.Fatalf("%U:exceptionData too large %x > %d bits", ri.Rune, len(exceptionData), numExceptionBits)
-=======
 		log.Fatalf("%U:exceptionData too large %#x > %d bits", ri.Rune, len(exceptionData), numExceptionBits)
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 	}
 
 	// Set the offset in the exceptionData array.

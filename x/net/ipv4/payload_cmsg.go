@@ -2,13 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-<<<<<<< HEAD
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
-
-package ipv4
-
-import "net"
-=======
 // +build aix darwin dragonfly freebsd linux netbsd openbsd solaris
 
 package ipv4
@@ -18,7 +11,6 @@ import (
 
 	"golang.org/x/net/internal/socket"
 )
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 
 // ReadFrom reads a payload of the received IPv4 datagram, from the
 // endpoint c, copying the payload into b. It returns the number of
@@ -27,10 +19,6 @@ import (
 func (c *payloadHandler) ReadFrom(b []byte) (n int, cm *ControlMessage, src net.Addr, err error) {
 	if !c.ok() {
 		return 0, nil, nil, errInvalidConn
-<<<<<<< HEAD
-	}
-	return c.readFrom(b)
-=======
 	}
 	c.rawOpt.RLock()
 	m := socket.Message{
@@ -71,7 +59,6 @@ func (c *payloadHandler) ReadFrom(b []byte) (n int, cm *ControlMessage, src net.
 		cm.Src = netAddrToIP4(m.Addr)
 	}
 	return m.N, cm, m.Addr, nil
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
 
 // WriteTo writes a payload of the IPv4 datagram, to the destination
@@ -83,10 +70,6 @@ func (c *payloadHandler) ReadFrom(b []byte) (n int, cm *ControlMessage, src net.
 func (c *payloadHandler) WriteTo(b []byte, cm *ControlMessage, dst net.Addr) (n int, err error) {
 	if !c.ok() {
 		return 0, errInvalidConn
-<<<<<<< HEAD
-	}
-	return c.writeTo(b, cm, dst)
-=======
 	}
 	m := socket.Message{
 		Buffers: [][]byte{b},
@@ -98,5 +81,4 @@ func (c *payloadHandler) WriteTo(b []byte, cm *ControlMessage, dst net.Addr) (n 
 		err = &net.OpError{Op: "write", Net: c.PacketConn.LocalAddr().Network(), Source: c.PacketConn.LocalAddr(), Addr: opAddr(dst), Err: err}
 	}
 	return m.N, err
->>>>>>> bd25a1f6d07d2d464980e6a8576c1ed59bb3950a
 }
